@@ -91,6 +91,7 @@
   .kpi-unit { font-size: 12px; font-weight: 400; }
   .kpi-sub { font-size: 12px; color: #94A3B8; margin-top: 4px; }
   .kpi-sub b { font-weight: 700; }
+  .count-up { font-variant-numeric: tabular-nums; }
 
   /* BOTTOM GRID */
   .bottom-grid {
@@ -207,6 +208,14 @@
     padding-right: 6px;
   }
   .total-bar-fill span { font-size: 10px; color: white; font-weight: 700; }
+  .bar-commit,
+  .bar-actual,
+  .total-bar-fill {
+    transition: width 1.2s ease;
+  }
+  .donut-arc {
+    transition: stroke-dasharray 1.4s ease;
+  }
 
   /* FOOTER */
   .footer {
@@ -218,6 +227,41 @@
   }
   .footer p { color: rgba(255,255,255,0.7); font-size: 11px; }
   .footer b { color: white; }
+
+  @media (max-width: 1200px) {
+    .header { padding: 18px 24px; gap: 12px; }
+    .content { padding: 20px 24px 24px; }
+    .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .bottom-grid { grid-template-columns: 1fr 1fr; }
+    .summary-card { grid-column: span 2; }
+  }
+
+  @media (max-width: 900px) {
+    body { padding: 12px; }
+    .header { flex-direction: column; align-items: flex-start; }
+    .header-left { width: 100%; }
+    .header-badge { width: 100%; text-align: center; }
+    .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .summary-card { grid-column: auto; }
+    .bar-meta { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .bar-name { max-width: 100%; white-space: normal; }
+  }
+
+  @media (max-width: 640px) {
+    .header-logo { height: 42px; }
+    .header-divider { display: none; }
+    .header-title h1 { font-size: 18px; }
+    .content { padding: 14px; }
+    .kpi-row { grid-template-columns: 1fr; gap: 10px; }
+    .kpi-card { padding: 12px 14px; }
+    .kpi-value { font-size: 24px; }
+    .legend-row { font-size: 11px; }
+    .legend-right { min-width: 60px; }
+    .summary-body { padding: 12px; }
+    .footer { padding: 10px 14px; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .footer p { font-size: 10px; }
+  }
 
   @media print {
     body { background: white; padding: 0; }
@@ -251,26 +295,26 @@
     <div class="kpi-row">
       <div class="kpi-card kpi-blue">
         <div class="kpi-label">💰 งบตามแผน</div>
-        <div class="kpi-value">316.92 <span class="kpi-unit">ล้านบาท</span></div>
+        <div class="kpi-value"><span class="count-up" data-target="316.92" data-decimals="2">0.00</span> <span class="kpi-unit">ล้านบาท</span></div>
       </div>
       <div class="kpi-card kpi-green">
         <div class="kpi-label">✅ งบจ่ายจริง</div>
-        <div class="kpi-value">108.23 <span class="kpi-unit">ล้านบาท</span></div>
+        <div class="kpi-value"><span class="count-up" data-target="108.23" data-decimals="2">0.00</span> <span class="kpi-unit">ล้านบาท</span></div>
         <div class="kpi-sub"><b style="color:#1E293B">34.1%</b> ของงบตามแผน</div>
       </div>
       <div class="kpi-card kpi-amber">
         <div class="kpi-label">🔗 งบผูกพัน</div>
-        <div class="kpi-value">55.82 <span class="kpi-unit">ล้านบาท</span></div>
+        <div class="kpi-value"><span class="count-up" data-target="55.82" data-decimals="2">0.00</span> <span class="kpi-unit">ล้านบาท</span></div>
         <div class="kpi-sub"><b style="color:#1E293B">17.6%</b> ของงบตามแผน</div>
       </div>
       <div class="kpi-card kpi-purple">
         <div class="kpi-label">📊 รวม(งบจ่ายจริง+งบผูกพัน)</div>
-        <div class="kpi-value">164.05 <span class="kpi-unit">ล้านบาท</span></div>
+        <div class="kpi-value"><span class="count-up" data-target="164.05" data-decimals="2">0.00</span> <span class="kpi-unit">ล้านบาท</span></div>
         <div class="kpi-sub"><b style="color:#1E293B">51.8%</b> ของงบตามแผน</div>
       </div>
       <div class="kpi-card kpi-red">
         <div class="kpi-label">💼 งบคงเหลือ</div>
-        <div class="kpi-value">152.87 <span class="kpi-unit">ล้านบาท</span></div>
+        <div class="kpi-value"><span class="count-up" data-target="152.87" data-decimals="2">0.00</span> <span class="kpi-unit">ล้านบาท</span></div>
         <div class="kpi-sub"><b style="color:#1E293B">48.2%</b> ของงบตามแผน</div>
       </div>
     </div>
@@ -509,15 +553,15 @@
               <!-- Background circle -->
               <circle cx="60" cy="60" r="46" fill="none" stroke="#E2E8F0" stroke-width="18"/>
               <!-- จ่ายจริง 34.1% -->
-              <circle cx="60" cy="60" r="46" fill="none" stroke="#10B981" stroke-width="18"
+              <circle class="donut-arc" cx="60" cy="60" r="46" fill="none" stroke="#10B981" stroke-width="18"
                 stroke-dasharray="98.56 190.47" stroke-dashoffset="0"
                 transform="rotate(-90 60 60)"/>
               <!-- งบผูกพัน 17.6%, offset -->
-              <circle cx="60" cy="60" r="46" fill="none" stroke="#F59E0B" stroke-width="18"
+              <circle class="donut-arc" cx="60" cy="60" r="46" fill="none" stroke="#F59E0B" stroke-width="18"
                 stroke-dasharray="50.87 238.16" stroke-dashoffset="-98.56"
                 transform="rotate(-90 60 60)"/>
               <!-- center text -->
-              <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="800" fill="#1E293B" font-family="Sarabun, sans-serif">51.8%</text>
+              <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="800" fill="#1E293B" font-family="Sarabun, sans-serif"><tspan class="count-up" data-target="51.8" data-decimals="1">0.0</tspan>%</text>
               <text x="60" y="68" text-anchor="middle" font-size="8" fill="#64748B" font-family="Sarabun, sans-serif">รวมทั้งสิ้น</text>
             </svg>
           </div>
@@ -553,7 +597,7 @@
             <div class="total-bar-label">ความคืบหน้าการใช้จ่าย (งบจ่ายจริง+งบผูกพัน)</div>
             <div class="total-bar-track">
               <div class="total-bar-fill" style="width:51.8%">
-                <span>51.8%</span>
+                <span><span class="count-up" data-target="51.8" data-decimals="1">0.0</span>%</span>
               </div>
             </div>
             <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:#94A3B8;">
@@ -566,11 +610,11 @@
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
               <div style="background:#F0FDF4; border-radius:6px; padding:8px; text-align:center;">
                 <div style="font-size:10px; color:#64748B; margin-bottom:2px;">จำนวนแผนงาน</div>
-                <div style="font-size:18px; font-weight:800; color:#059669;">7</div>
+                <div style="font-size:18px; font-weight:800; color:#059669;"><span class="count-up" data-target="7" data-decimals="0">0</span></div>
               </div>
               <div style="background:#EFF6FF; border-radius:6px; padding:8px; text-align:center;">
                 <div style="font-size:10px; color:#64748B; margin-bottom:2px;">จำนวนหน่วยงาน</div>
-                <div style="font-size:18px; font-weight:800; color:#1D4ED8;">10</div>
+                <div style="font-size:18px; font-weight:800; color:#1D4ED8;"><span class="count-up" data-target="10" data-decimals="0">0</span></div>
               </div>
             </div>
           </div>
@@ -588,5 +632,80 @@
   </div>
 
 </div>
+<script>
+  (function () {
+    function prepareVisualState() {
+      var bars = document.querySelectorAll(".bar-commit, .bar-actual, .total-bar-fill");
+      bars.forEach(function (bar) {
+        if (!bar.dataset.targetWidth) {
+          bar.dataset.targetWidth = bar.style.width || "0%";
+        }
+        bar.style.width = "0%";
+      });
+
+      var arcs = document.querySelectorAll(".donut-arc");
+      arcs.forEach(function (arc) {
+        if (!arc.dataset.targetDasharray) {
+          arc.dataset.targetDasharray = arc.getAttribute("stroke-dasharray") || "0 0";
+        }
+        var parts = arc.dataset.targetDasharray.split(" ");
+        var dash = parseFloat(parts[0]) || 0;
+        var gap = parseFloat(parts[1]) || 0;
+        arc.setAttribute("stroke-dasharray", "0 " + (dash + gap));
+      });
+    }
+
+    function animateNumber(el, duration) {
+      var target = parseFloat(el.dataset.target || "0");
+      var decimals = parseInt(el.dataset.decimals || "0", 10);
+      var startTime = null;
+
+      function frame(ts) {
+        if (!startTime) startTime = ts;
+        var progress = Math.min((ts - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        var value = target * eased;
+        el.textContent = value.toFixed(decimals);
+        if (progress < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function animateBars() {
+      var bars = document.querySelectorAll(".bar-commit, .bar-actual, .total-bar-fill");
+      bars.forEach(function (bar, index) {
+        var target = bar.dataset.targetWidth || "0%";
+        setTimeout(function () {
+          bar.style.width = target;
+        }, 200 + index * 45);
+      });
+    }
+
+    function animateDonut() {
+      var arcs = document.querySelectorAll(".donut-arc");
+      arcs.forEach(function (arc, index) {
+        var original = arc.dataset.targetDasharray || "0 0";
+        var parts = original.split(" ");
+        var dash = parseFloat(parts[0]) || 0;
+        var gap = parseFloat(parts[1]) || 0;
+        setTimeout(function () {
+          arc.setAttribute("stroke-dasharray", dash + " " + gap);
+        }, 300 + index * 180);
+      });
+    }
+
+    prepareVisualState();
+
+    window.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".count-up").forEach(function (el, index) {
+        setTimeout(function () {
+          animateNumber(el, 1200);
+        }, 120 + index * 90);
+      });
+      animateBars();
+      animateDonut();
+    });
+  })();
+</script>
 </body>
 </html>
