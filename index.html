@@ -25,7 +25,7 @@
 
   /* HEADER */
   .header {
-    background: linear-gradient(135deg, #363092 0%, #5944B2 100%);
+    background: linear-gradient(135deg, #352f8d 0%, #352f8d 100%);
     padding: 22px 36px;
     display: flex;
     align-items: center;
@@ -109,7 +109,7 @@
     overflow: hidden;
   }
   .section-head {
-    background: #363092;
+    background: #352f8d;
     padding: 10px 16px;
     display: flex;
     align-items: center;
@@ -161,7 +161,7 @@
     overflow: hidden;
   }
   .summary-head {
-    background: #363092;
+    background: #352f8d;
     padding: 10px 16px;
   }
   .summary-head h2 { color: white; font-size: 14px; font-weight: 700; }
@@ -219,7 +219,7 @@
 
   /* FOOTER */
   .footer {
-    background: #363092;
+    background: #352f8d;
     padding: 10px 36px;
     display: flex;
     align-items: center;
@@ -229,7 +229,7 @@
   .footer b { color: white; }
 
   @media (max-width: 1200px) {
-    .header { padding: 18px 24px; gap: 12px; }
+    .header { padding: 20px 24px; gap: 12px; }
     .content { padding: 20px 24px 24px; }
     .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .bottom-grid { grid-template-columns: 1fr 1fr; }
@@ -239,7 +239,17 @@
   @media (max-width: 900px) {
     body { padding: 12px; }
     .header { flex-direction: column; align-items: flex-start; }
-    .header-left { width: 100%; }
+    .header-left {
+      width: 100%;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      text-align: center;
+    }
+    .header-title { text-align: center; }
+    .header-title p { margin-top: 6px; }
+    .header-divider { display: none; }
     .header-badge { width: 100%; text-align: center; }
     .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .bottom-grid { grid-template-columns: 1fr; }
@@ -250,7 +260,6 @@
 
   @media (max-width: 640px) {
     .header-logo { height: 42px; }
-    .header-divider { display: none; }
     .header-title h1 { font-size: 18px; }
     .content { padding: 14px; }
     .kpi-row { grid-template-columns: 1fr; gap: 10px; }
