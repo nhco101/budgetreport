@@ -748,6 +748,9 @@ select.au-in{padding-right:8px}
 .top .au-right{margin-left:auto}
 .au-d-allm{display:none}
 .au-um{position:relative}
+.au-um-slot{display:flex;align-items:center;gap:10px}
+.au-help-btn svg{width:17px;height:17px}
+.au-guest .au-menu{width:230px}
 .au-um-btn{display:flex;align-items:center;gap:9px;height:40px;padding:0 10px 0 4px;border:1px solid var(--line-2);border-radius:999px;background:var(--surface);color:var(--fg);cursor:pointer;font-family:inherit}
 .au-um-btn:hover{border-color:var(--brand-3)}
 .au-av{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
@@ -937,6 +940,9 @@ td.code .vf-st{margin-right:6px}
   .top .au-um-slot{display:flex;align-items:center}
   .au-login-btn{width:42px;height:42px;padding:0!important;justify-content:center}
   .au-login-btn .au-lb-t{display:none}
+  .au-help-btn{width:42px;height:42px;padding:0!important;justify-content:center}
+  .au-help-btn .au-lb-t{display:none}
+  .au-help-btn svg{width:19px;height:19px}
   .au-login-btn svg{width:19px;height:19px}
   /* ตารางผู้ใช้ / Log เป็นการ์ดบนมือถือ */
   .au-tw{max-height:none;overflow:visible}
@@ -960,7 +966,7 @@ td.code .vf-st{margin-right:6px}
   .au-nw{white-space:normal}
 }
 @media print{
-  .au-login,.au-admin,.au-modal,.au-toast,.au-dp,.au-right .au-um,.au-right .au-login-btn{display:none!important}
+  .au-login,.au-admin,.au-modal,.au-toast,.au-dp,.au-right .au-um,.au-right .au-login-btn,.au-right .au-help-btn{display:none!important}
 }
 
 /* ===== Site Map (แผนผังระบบ) ===== */
@@ -2733,8 +2739,14 @@ var Auth = (function () {
   function renderUserMenus() {
     var u = S.user;
     if (!u) {
+      /* ผู้ที่ยังไม่ล็อกอิน: มีเมนู "ช่วยเหลือ" (Site Map / คู่มือการใช้งานระบบ) คู่กับปุ่มเข้าสู่ระบบ */
+      var guest = '<div class="au-um au-guest"><button class="btn au-help-btn" type="button" aria-haspopup="menu" aria-expanded="false" data-act="um" aria-label="ช่วยเหลือ" title="Site Map / คู่มือการใช้งานระบบ">' +
+        IC.book + '<span class="au-lb-t">ช่วยเหลือ</span></button>' +
+        '<div class="au-menu" role="menu">' +
+        '<button type="button" role="menuitem" data-act="sitemap">' + IC.sitemap + 'Site Map</button>' +
+        '<button type="button" role="menuitem" data-act="manual">' + IC.book + 'คู่มือการใช้งานระบบ</button></div></div>';
       qa('.au-um-slot').forEach(function (s) {
-        s.innerHTML = '<button class="btn primary au-login-btn" type="button" data-act="login" aria-label="เข้าสู่ระบบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg><span class="au-lb-t">เข้าสู่ระบบ</span></button>';
+        s.innerHTML = guest + '<button class="btn primary au-login-btn" type="button" data-act="login" aria-label="เข้าสู่ระบบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg><span class="au-lb-t">เข้าสู่ระบบ</span></button>';
       });
       return;
     }
@@ -2751,7 +2763,7 @@ var Auth = (function () {
       '<button type="button" role="menuitem" data-act="out" class="out">' + IC.out + 'ออกจากระบบ</button></div></div>';
     qa('.au-um-slot').forEach(function (s) { s.innerHTML = html; });
   }
-  function closeMenus() { qa('.au-um.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.au-um-btn').setAttribute('aria-expanded', 'false'); }); }
+  function closeMenus() { qa('.au-um.open').forEach(function (m) { m.classList.remove('open'); var bt = m.querySelector('[data-act=um]'); if (bt) bt.setAttribute('aria-expanded', 'false'); }); }
 
   /* ---------- Modal ---------- */
   function modal(o) {
@@ -3586,8 +3598,8 @@ body.mn-open{overflow:hidden}
 <h3 id="mn-s0-1"><span class="no">0.1</span><span class="nw">ผู้ใช้งานและสิทธิ์</span></h3>
 <table>
 <tr><th style="width:24%"><span class="w">ประเภท</span><wbr/><span class="w">ผู้ใช้</span></th><th><span class="w">สิ่ง</span><wbr/><span class="w">ที่</span><wbr/><span class="w">ทำได้</span></th></tr>
-<tr><td><b><span class="w">ผู้</span><wbr/><span class="w">เยี่ยมชม</span></b><br/><span class="nw">(ไม่เข้าสู่ระบบ)</span></td><td><span class="w">ดู</span> Dashboard <span class="nw">ทุกมุมมอง</span>, <span class="w">พิมพ์</span><wbr/><span class="w">ข้อมูล</span>, <span class="w">ส่งออก</span> Excel</td></tr>
-<tr><td><b>User</b></td><td><span class="w">เหมือน</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">เยี่ยมชม</span> + <span class="nw">เปลี่ยนรหัสผ่าน</span>, Site Map, <span class="w">คู่มือ</span> <span class="w">และ</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">เพิ่มเติม</span><wbr/><span class="w">ที่</span><wbr/><span class="w">ได้รับ</span><wbr/><span class="w">เป็นราย</span><wbr/><span class="w">คน</span> <span class="w">เช่น</span> <span class="nw">ดาวน์โหลดชุดข้อมูลต้นฉบับ</span>, <span class="nw">ยืนยันความถูกต้องของข้อมูล</span>, <span class="nw">บันทึกผลดำเนินงาน</span>, <span class="nw">จัดการผู้ใช้งาน</span>, <span class="nw">เรียกดู Log</span></td></tr>
+<tr><td><b><span class="w">ผู้</span><wbr/><span class="w">เยี่ยมชม</span></b><br/><span class="nw">(ไม่เข้าสู่ระบบ)</span></td><td><span class="w">ดู</span> Dashboard <span class="nw">ทุกมุมมอง</span>, <span class="w">พิมพ์</span><wbr/><span class="w">ข้อมูล</span>, <span class="w">ส่งออก</span> Excel, Site Map <span class="w">และ</span><wbr/><span class="w">คู่มือ</span> (<span class="w">ปุ่ม</span> <span class="nw">ช่วยเหลือ</span>)</td></tr>
+<tr><td><b>User</b></td><td><span class="w">เหมือน</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">เยี่ยมชม</span> + <span class="nw">เปลี่ยนรหัสผ่าน</span> <span class="w">และ</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">เพิ่มเติม</span><wbr/><span class="w">ที่</span><wbr/><span class="w">ได้รับ</span><wbr/><span class="w">เป็นราย</span><wbr/><span class="w">คน</span> <span class="w">เช่น</span> <span class="nw">ดาวน์โหลดชุดข้อมูลต้นฉบับ</span>, <span class="nw">ยืนยันความถูกต้องของข้อมูล</span>, <span class="nw">บันทึกผลดำเนินงาน</span>, <span class="nw">จัดการผู้ใช้งาน</span>, <span class="nw">เรียกดู Log</span></td></tr>
 <tr><td><b>Admin</b></td><td><span class="w">ทุก</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ข้างต้น</span> + <span class="nw">ระบบจัดการหลังบ้าน</span> (<span class="nw">ผู้ใช้งานและสิทธิ์</span>, Log) — <span class="w">ยกเว้น</span><wbr/><span class="w">การ</span><wbr/><span class="w">ลบ</span> Log; <span class="w">เมนู</span> <b><span class="w">จัดการ</span><wbr/><span class="w">ข้อมูล</span></b> <span class="w">และ</span> <b><span class="w">ตั้งค่า</span><wbr/><span class="w">การคำนวณ</span></b> <span class="w">ใช้ได้</span><wbr/><span class="w">เฉพาะคน</span><wbr/><span class="w">ที่</span> Superadmin <span class="w">เปิด</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ให้</span> (<span class="w">แยกกัน</span><wbr/><span class="w">ราย</span><wbr/><span class="w">สิทธิ์</span>)</td></tr>
 <tr><td><b>Superadmin</b></td><td><span class="w">ทุก</span><wbr/><span class="w">สิทธิ์</span> <span class="w">รวมถึง</span><wbr/><span class="w">ลบ</span> Log, <span class="w">จัดการ</span><wbr/><span class="w">ข้อมูล</span>, <span class="w">ตั้งค่า</span><wbr/><span class="w">การคำนวณ</span> <span class="w">และ</span><span class="nw">จัดการบัญชี</span> Admin / Superadmin</td></tr>
 </table>
@@ -3691,7 +3703,7 @@ body.mn-open{overflow:hidden}
 <li><span class="w">เปลี่ยน</span><wbr/><span class="w">แล้ว</span> <span class="w">อุปกรณ์</span><wbr/><span class="w">อื่น</span><wbr/><span class="w">ที่</span><wbr/><span class="w">เข้าสู่ระบบ</span><wbr/><span class="w">ด้วย</span><wbr/><span class="w">บัญชี</span><wbr/><span class="w">นี้</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ถูก</span><wbr/><span class="w">ออกจากระบบ</span></li></ul>
 <figure class="mn-fig dlg"><img alt="ภาพ 13 หน้าต่างเปลี่ยนรหัสผ่าน" data-mi="a_changepw"/><figcaption><span class="w">ภาพ</span> 13 <span class="w">หน้าต่าง</span><span class="nw">เปลี่ยนรหัสผ่าน</span></figcaption></figure>
 <h3 id="mn-s5-4"><span class="no">5.4</span>Site Map</h3>
-<p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui">Site Map</span> <span class="w">เพื่อ</span><wbr/><span class="w">ดู</span><wbr/><span class="w">แผนผัง</span><wbr/><span class="w">เมนู</span><wbr/><span class="w">ทั้งหมด</span><wbr/><span class="w">ของ</span><wbr/><span class="w">ระบบ</span> <span class="w">ใช้</span><wbr/><span class="w">ปุ่ม</span> <span class="mn-ui">ขนาดจริง</span> / <span class="mn-ui">พอดีหน้าจอ</span> <span class="w">เพื่อ</span><wbr/><span class="w">ย่อ</span><wbr/><span class="w">ขยาย</span> <span class="w">และ</span> <span class="mn-ui">ดาวน์โหลดรูปภาพ</span> <span class="w">เพื่อ</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">เป็น</span><wbr/><span class="w">ไฟล์</span> PNG</p>
+<p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui">Site Map</span> (<span class="w">ถ้า</span><wbr/><span class="w">ยัง</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">เข้าสู่ระบบ</span> <span class="w">ใช้</span><wbr/><span class="w">ปุ่ม</span> <span class="mn-ui">ช่วยเหลือ</span> › <span class="mn-ui">Site Map</span>) <span class="w">เพื่อ</span><wbr/><span class="w">ดู</span><wbr/><span class="w">แผนผัง</span><wbr/><span class="w">เมนู</span><wbr/><span class="w">ทั้งหมด</span><wbr/><span class="w">ของ</span><wbr/><span class="w">ระบบ</span> <span class="w">ใช้</span><wbr/><span class="w">ปุ่ม</span> <span class="mn-ui">ขนาดจริง</span> / <span class="mn-ui">พอดีหน้าจอ</span> <span class="w">เพื่อ</span><wbr/><span class="w">ย่อ</span><wbr/><span class="w">ขยาย</span> <span class="w">และ</span> <span class="mn-ui">ดาวน์โหลดรูปภาพ</span> <span class="w">เพื่อ</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">เป็น</span><wbr/><span class="w">ไฟล์</span> PNG</p>
 <figure class="mn-fig"><img alt="ภาพ 14 หน้าจอ Site Map" data-mi="a_sitemap"/><figcaption><span class="w">ภาพ</span> 14 <span class="w">หน้าจอ</span> Site Map</figcaption></figure>
 <h3 id="mn-s5-5"><span class="no">5.5</span><span class="nw">ยืนยันความถูกต้องของข้อมูล</span></h3>
 <p><span class="w">สำหรับ</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">ที่</span><wbr/><span class="w">ได้รับ</span><wbr/><span class="w">สิทธิ์</span> <b><span class="nw">ยืนยันความถูกต้องของข้อมูล</span></b></p>
@@ -3726,7 +3738,7 @@ body.mn-open{overflow:hidden}
 <div class="mn-tip"><b><span class="w">ตัวอย่าง</span>:</b> <span class="w">กิจกรรม</span> <span class="nw">70P01A01</span> = 40% (<span class="w">ค่า</span><wbr/><span class="w">น้ำหนัก</span> 13.58) <span class="w">และ</span> <span class="nw">70P01A02</span> = 80% (<span class="w">ค่า</span><wbr/><span class="w">น้ำหนัก</span> 3.80) → <span class="w">โครงการ</span> <span class="nw">70P01A</span> = 40×13.58÷100 + 80×3.80÷100 = <b>8.47%</b> → <span class="w">แผนงาน</span> <span class="nw">70P01</span> <span class="w">ได้</span><wbr/><span class="w">จาก</span><wbr/><span class="w">โครงการ</span><wbr/><span class="w">นี้</span> 8.47<wbr/>×78.74÷100 = <b>6.67%</b> (<span class="w">บวก</span><wbr/><span class="w">กับ</span><wbr/><span class="w">ผล</span><wbr/><span class="w">ของ</span><wbr/><span class="w">โครงการ</span><wbr/><span class="w">อื่น</span><wbr/><span class="w">ใน</span><wbr/><span class="w">แผนงาน</span>)</div>
 <div class="mn-note"><span class="w">ระบบ</span><wbr/><span class="w">คำนวณ</span><wbr/><span class="w">ระดับ</span><wbr/><span class="w">โครงการ</span><wbr/><span class="w">และ</span><wbr/><span class="w">แผนงาน</span><wbr/><span class="w">ให้</span><wbr/><span class="w">อัตโนมัติ</span><wbr/><span class="w">ทุกครั้งที่</span><wbr/><span class="w">บันทึก</span> <span class="w">แล้ว</span><wbr/><span class="w">โหลด</span> Dashboard <span class="w">ใหม่</span><wbr/><span class="w">ทันที</span> — <span class="w">ค่า</span> <span class="nw">%ดำเนินงาน</span><span class="w">ของ</span><wbr/><span class="w">กิจกรรม</span><wbr/><span class="w">ที่</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">ผ่าน</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">จะ</span><wbr/><span class="w">มี</span><b><span class="w">เส้นประ</span><wbr/><span class="w">ใต้</span><wbr/><span class="w">ตัวเลข</span></b> <span class="w">เมื่อ</span><wbr/><span class="w">ชี้</span><wbr/><span class="w">เมาส์</span> (<span class="w">หรือ</span><wbr/><span class="w">แตะ</span><wbr/><span class="w">บน</span><wbr/><span class="w">มือถือ</span>) <span class="w">จะ</span><wbr/><span class="w">แสดง</span> <b>"<span class="w">บันทึก</span><wbr/><span class="w">โดย</span> <span class="w">ชื่อ</span><wbr/><span class="w">ผู้บันทึก</span>"</b> <span class="w">พร้อม</span><wbr/><span class="w">วัน</span><wbr/><span class="w">เวลา</span><wbr/><span class="w">ที่</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">ล่าสุด</span> <span class="w">และ</span><wbr/><span class="w">ทุก</span><wbr/><span class="w">การ</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ถูก</span><wbr/><span class="w">เก็บ</span><wbr/><span class="w">ใน</span> Log (<span class="w">กิจกรรม</span> "<span class="w">บันทึก</span> %<wbr/><span class="w">ดำเนินงาน</span>") <span class="w">และ</span><wbr/><span class="w">ใน</span><wbr/><span class="w">ชีต</span><wbr/><span class="w">ระบบ</span> SYS<wbr/>_Perf</div>
 <h3 id="mn-s5-7"><span class="no">5.7</span>คู่มือการใช้งานระบบ</h3>
-<p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui">คู่มือการใช้งานระบบ</span> <span class="w">เพื่อ</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">คู่มือ</span><wbr/><span class="w">นี้</span> — <span class="w">กด</span> <span class="mn-ui">ดาวน์โหลด PDF</span> <span class="w">แล้ว</span><wbr/><span class="w">เลือก</span><wbr/><span class="w">ปลายทาง</span> <b><span class="nw">บันทึกเป็น PDF</span></b></p>
+<p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui">คู่มือการใช้งานระบบ</span> (<span class="w">ถ้า</span><wbr/><span class="w">ยัง</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">เข้าสู่ระบบ</span> <span class="w">ใช้</span><wbr/><span class="w">ปุ่ม</span> <span class="mn-ui">ช่วยเหลือ</span> › <span class="mn-ui">คู่มือการใช้งานระบบ</span>) <span class="w">เพื่อ</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">คู่มือ</span><wbr/><span class="w">นี้</span> — <span class="w">กด</span> <span class="mn-ui">ดาวน์โหลด PDF</span> <span class="w">แล้ว</span><wbr/><span class="w">เลือก</span><wbr/><span class="w">ปลายทาง</span> <b><span class="nw">บันทึกเป็น PDF</span></b></p>
 <h2 id="mn-s6"><span class="no">6</span><span class="ht"><span class="nw">ระบบจัดการหลังบ้าน</span></span></h2>
 <p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui"><span class="nw">ระบบจัดการหลังบ้าน</span></span> (<span class="w">แสดง</span><wbr/><span class="w">เฉพาะ</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">มีสิทธิ์</span>) — <span class="w">แท็บ</span><wbr/><span class="w">ที่</span><wbr/><span class="w">เห็น</span><wbr/><span class="w">ขึ้นกับ</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ของ</span><wbr/><span class="w">แต่ละ</span><wbr/><span class="w">บัญชี</span> <span class="w">กด</span> <span class="mn-ui">กลับสู่ Dashboard</span> <span class="w">เพื่อ</span><wbr/><span class="w">ออกจาก</span><wbr/><span class="w">หลังบ้าน</span></p>
 <h3 id="mn-s6-1"><span class="no">6.1</span><span class="nw">ผู้ใช้งานและสิทธิ์</span></h3>
