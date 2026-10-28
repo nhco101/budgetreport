@@ -12,7 +12,13 @@
    * ===================================================================== */
   var API_URL = 'https://script.google.com/macros/s/AKfycbzcWsKkolOx0B5AAAiEHmhs5_Sm9JFos04f8YqBlNgk0VCuzxBoPbsLhUV-qpWtw4Rw/exec';
   (function () {
-    function callApi(fn, args) {
+    /* เซิร์ฟเวอร์ Google บางครั้งตอบ 404 / 429 / 5xx ชั่วคราว (ยังไม่ได้รันสคริปต์) → ลองใหม่อัตโนมัติ
+       ฟังก์ชันอ่านอย่างเดียวลองใหม่ได้ทุกกรณี ส่วนฟังก์ชันบันทึกข้อมูลลองใหม่เฉพาะเมื่อแน่ใจว่าคำขอยังไม่ถูกประมวลผล */
+    var READ_ONLY = { getBudgetData: 1, getSourceLink: 1, appFiscalYear: 1, getManualImages: 1, authMe: 1,
+      authAdminContacts: 1, adminListUsers: 1, adminGetLogs: 1, webDataInfo: 1, webCalcSettings: 1, webSideLinksGet: 1 };
+    var RETRY_STATUS = { 404: 1, 408: 1, 429: 1, 500: 1, 502: 1, 503: 1, 504: 1 };
+    var WAIT = [1500, 3000, 5000];   // ลองใหม่สูงสุด 3 ครั้ง
+    function once(fn, args) {
       return fetch(API_URL, {
         method: 'POST',
         credentials: 'omit',                       // ไม่ส่งคุกกี้บัญชี Google → ไม่ติดปัญหาหลายบัญชี
@@ -20,17 +26,30 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // ไม่ต้องมี CORS preflight
         body: JSON.stringify({ fn: fn, args: args })
       }).then(function (res) {
-        if (!res.ok) throw new Error('เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ' + res.status + ')');
+        if (!res.ok) { var he = new Error('เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ' + res.status + ')'); he.status = res.status; throw he; }
         return res.text();
+      }, function () {
+        var ne = new Error('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'); ne.net = true; throw ne;
       }).then(function (txt) {
         var r;
-        try { r = JSON.parse(txt); } catch (e) { throw new Error('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ — ตรวจสอบว่า Web App ตั้งค่า "ผู้ที่มีสิทธิ์เข้าถึง: ทุกคน"'); }
-        if (!r || !r.ok) throw new Error((r && r.error) || 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์');
+        try { r = JSON.parse(txt); } catch (e) {
+          var pe = new Error('เซิร์ฟเวอร์ตอบกลับไม่ใช่ข้อมูล — ตรวจสอบว่า Web App ตั้งค่า "ผู้มีสิทธิ์เข้าถึง: ทุกคน" และใช้ URL การทำให้ใช้งานได้ล่าสุด'); pe.status = 'html'; throw pe;
+        }
+        if (!r || !r.ok) { var se = new Error((r && r.error) || 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์'); se.app = true; throw se; }
         return r.result;
-      }, function (e) {
-        if (e && e.message && /HTTP|เซิร์ฟเวอร์/.test(e.message)) throw e;
-        throw new Error('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
       });
+    }
+    function callApi(fn, args) {
+      var n = 0;
+      function attempt() {
+        return once(fn, args).catch(function (e) {
+          var canRetry = !e.app && n < WAIT.length && (RETRY_STATUS[e.status] || ((e.net || e.status === 'html') && READ_ONLY[fn]));
+          if (!canRetry) throw e;
+          var w = WAIT[n++];
+          return new Promise(function (ok) { setTimeout(ok, w); }).then(attempt);
+        });
+      }
+      return attempt();
     }
     /** สร้างตัวเรียกแบบเดียวกับ google.script.run (withSuccessHandler / withFailureHandler / withUserObject) */
     function runner(ok, fail, obj) {
@@ -634,6 +653,7 @@ html,body{margin:0}
   #print-container .pill{font-size:10.5px;padding:0 7px}
   #print-container th.sticky,#print-container td.sticky{width:36px;min-width:36px;max-width:36px}
 }
+.load-elapsed{display:flex;align-items:baseline;justify-content:center;gap:6px;font-family:var(--f-num);font-variant-numeric:tabular-nums;color:var(--brand);margin:4px 0 2px}.load-elapsed b{font-size:38px;font-weight:700;line-height:1}.load-elapsed span{font-size:15px;font-weight:600}.load-msg{font-weight:600}.load-more{margin-top:6px}
 </style>
 <style>
 /* ================= ระบบล็อกอิน / หลังบ้าน (au-*) ================= */
@@ -1098,8 +1118,10 @@ table.au-k tr.hid td{opacity:.55}
 
   <div id="status-container" class="status loading">
     <div class="spinner"></div>
-    <div>กำลังวิเคราะห์โครงสร้างงบประมาณ โปรดรอสักครู่...</div>
-    <div class="muted" style="font-size:13px">(หากค้างหน้านี้นานกว่า 10 วินาที อาจเกิดจากปัญหาขัดข้อง)</div>
+    <div class="load-msg" id="load-msg">กำลังวิเคราะห์โครงสร้างงบประมาณ โปรดรอสักครู่...</div>
+    <div class="load-elapsed" aria-live="off">รอมาแล้ว <b id="load-sec">0</b> <span>วินาที</span></div>
+    <div class="muted" id="load-hint" style="font-size:13px">(การเปิดครั้งแรกหลังไม่มีผู้ใช้สักพัก อาจใช้เวลา 10–30 วินาที)</div>
+    <div class="load-more" id="load-more"></div>
   </div>
 
   <section class="band" aria-label="สรุปภาพรวม" id="band" hidden>
@@ -3808,6 +3830,7 @@ body.mn-open{overflow:hidden}
 <h3 id="mn-s7-1"><span class="no">7.1</span>ปัญหาและวิธีแก้</h3>
 <table>
 <tr><th><span class="w">อาการ</span></th><th><span class="w">วิธี</span><wbr/><span class="w">แก้</span></th></tr>
+<tr><td><span class="w">ขึ้น</span><wbr/><span class="w">กล่อง</span> "<span class="w">เกิด</span><wbr/><span class="w">ข้อผิดพลาด</span><wbr/><span class="w">ใน</span><wbr/><span class="w">การ</span><wbr/><span class="w">โหลด</span><wbr/><span class="w">ข้อมูล</span>" / <span class="w">การ</span><wbr/><span class="w">เชื่อมต่อ</span><wbr/><span class="w">หมดเวลา</span></td><td><span class="w">มัก</span><wbr/><span class="w">เกิด</span><wbr/><span class="w">เมื่อ</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">ครั้งแรก</span><wbr/><span class="w">หลัง</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">มี</span><wbr/><span class="w">ผู้ใช้</span><wbr/><span class="w">สักพัก</span> (<span class="w">เซิร์ฟเวอร์</span> Google <span class="w">เริ่ม</span><wbr/><span class="w">ทำงาน</span><wbr/><span class="w">ช้า</span>) — <span class="w">ระบบ</span><wbr/><span class="w">ลอง</span><wbr/><span class="w">ใหม่</span><wbr/><span class="w">ให้</span><wbr/><span class="w">อัตโนมัติ</span> 1 <span class="w">ครั้ง</span> <span class="w">ถ้า</span><wbr/><span class="w">ยัง</span><wbr/><span class="w">ขึ้น</span><wbr/><span class="w">ให้</span><wbr/><span class="w">กด</span> <b><span class="w">ลอง</span><wbr/><span class="w">โหลด</span><wbr/><span class="w">ข้อมูล</span><wbr/><span class="w">อีกครั้ง</span></b> · <span class="w">ถ้า</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">ผ่านหน้า</span><wbr/><span class="w">เว็บ</span><wbr/><span class="w">อื่น</span> (<span class="w">เช่น</span> github.io) <span class="w">หรือ</span><wbr/><span class="w">ล็อกอิน</span> Google <span class="w">หลาย</span><wbr/><span class="w">บัญชี</span><wbr/><span class="w">ใน</span><wbr/><span class="w">เบราว์เซอร์</span> <span class="w">ให้</span><wbr/><span class="w">ลอง</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">ลิงก์</span><wbr/><span class="w">เว็บ</span><wbr/><span class="w">แอ</span><wbr/>ป<wbr/><span class="w">โดยตรง</span><wbr/><span class="w">หรือ</span><wbr/><span class="w">ใช้</span><wbr/><span class="w">หน้าต่าง</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ระบุ</span><wbr/><span class="w">ตัวตน</span></td></tr>
 <tr><td><span class="w">ย้าย</span>/<span class="w">คัดลอก</span><wbr/><span class="w">ไฟล์</span><wbr/><span class="w">ไป</span><wbr/><span class="w">บัญชี</span> Google <span class="w">อื่น</span><wbr/><span class="w">แล้ว</span> <span class="w">เปิด</span><wbr/><span class="w">ดู</span><wbr/><span class="w">ได้</span><wbr/><span class="w">แต่</span><wbr/><span class="w">ล็อกอิน</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ได้</span></td><td><span class="w">ค่า</span><wbr/><span class="w">ตั้ง</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ติด</span><wbr/><span class="w">ไป</span><wbr/><span class="w">กับ</span><wbr/><span class="w">ไฟล์</span> — <span class="w">ส่ง</span><wbr/><span class="w">ออกจากระบบ</span><wbr/><span class="w">เดิม</span><wbr/><span class="w">แล้ว</span><wbr/><span class="w">นำ</span><wbr/><span class="w">เข้าที่</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">ใหม่</span> (<span class="w">หัวข้อ</span> 6.6)</td></tr>
 <tr><td><span class="w">หน้าจอ</span><wbr/><span class="w">มืด</span><wbr/><span class="w">ลง</span> <span class="w">มี</span><wbr/><span class="w">กล่อง</span> "<span class="w">กำลัง</span>…" <span class="w">และ</span><wbr/><span class="w">กด</span><wbr/><span class="w">อะไร</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ได้</span></td><td><span class="w">ระบบ</span><wbr/><span class="w">กำลัง</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">หรือ</span><wbr/><span class="w">เตรียม</span><wbr/><span class="w">ไฟล์</span><wbr/><span class="w">ดาวน์โหลด</span> — <b><span class="w">รอ</span><wbr/><span class="w">จน</span><wbr/><span class="w">กล่อง</span><wbr/><span class="w">หาย</span><wbr/><span class="w">ไป</span><wbr/><span class="w">เอง</span></b> <span class="w">อย่า</span><wbr/><span class="w">ปิด</span> <span class="w">รีเฟรช</span> <span class="w">หรือ</span><wbr/><span class="w">ออกจาก</span><wbr/><span class="w">หน้า</span> (<span class="w">หาก</span><wbr/><span class="w">กด</span><wbr/><span class="w">รีเฟรช</span> <span class="w">เบราว์เซอร์</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ถาม</span><wbr/><span class="w">ยืนยัน</span><wbr/><span class="w">ก่อน</span>)</td></tr>
 <tr><td><span class="w">หน้าจอ</span><wbr/><span class="w">ยัง</span><wbr/><span class="w">แสดง</span><wbr/><span class="w">ข้อมูล</span><wbr/><span class="w">หรือ</span><wbr/><span class="w">หน้าตา</span><wbr/><span class="w">แบบ</span><wbr/><span class="w">เก่า</span></td><td><span class="w">กด</span> <b><span class="nw">Ctrl + Shift + R</span></b> (Mac: <span class="nw">Cmd + Shift + R</span>) <span class="w">เพื่อ</span><wbr/><span class="w">โหลด</span><wbr/><span class="w">หน้าใหม่</span></td></tr>
@@ -3863,6 +3886,7 @@ body.mn-open{overflow:hidden}
     imgP = new Promise(function (ok) {
       if (!(window.google && google.script && google.script.run)) return ok();
       google.script.run.withSuccessHandler(function (txt) {
+        loadImages.n = 0;
         var map = {}; try { map = JSON.parse(txt || '{}'); } catch (e) {}
         var imgs = Array.prototype.slice.call(document.querySelectorAll('#mn-doc img[data-mi]'));
         var left = imgs.length; if (!left) return ok();
@@ -3872,7 +3896,10 @@ body.mn-open{overflow:hidden}
           im.onload = im.onerror = function () { if (--left <= 0) ok(); };
           im.src = src;
         });
-      }).withFailureHandler(function () { imgP = null; ok(); }).getManualImages();
+      }).withFailureHandler(function () {   // โหลดรูปไม่สำเร็จ (เครือข่าย/เซิร์ฟเวอร์ช้า) → ลองใหม่อัตโนมัติขณะคู่มือยังเปิดอยู่
+        imgP = null; ok();
+        if ((loadImages.n = (loadImages.n || 0) + 1) <= 5) setTimeout(function () { if (!$m('mn').hidden) loadImages(); }, 3000);
+      }).getManualImages();
     });
     return imgP;
   }
@@ -4077,11 +4104,23 @@ body.mn-open{overflow:hidden}
   }
 
   /* ---------------- โหลดข้อมูล ---------------- */
-  function retryLoad() {
+  /* กล่องกำลังโหลด: ข้อความ + ตัวเลขวินาทีที่นับขึ้นเรื่อย ๆ จนกว่าข้อมูลจะมา */
+  function loadBox(msg, hint, more) {
     var st = $('status-container');
-    st.className = 'status loading';
-    st.innerHTML = '<div class="spinner"></div><div>กำลังพยายามเชื่อมต่ออีกครั้ง โปรดรอสักครู่...</div>';
-    startLoadData();
+    st.hidden = false; st.className = 'status loading';
+    if (!document.getElementById('load-sec')) {
+      st.innerHTML = '<div class="spinner"></div><div class="load-msg" id="load-msg"></div>' +
+        '<div class="load-elapsed" aria-live="off">รอมาแล้ว <b id="load-sec">0</b> <span>วินาที</span></div>' +
+        '<div class="muted" id="load-hint" style="font-size:13px"></div><div class="load-more" id="load-more"></div>';
+    }
+    $('load-msg').textContent = msg;
+    $('load-hint').textContent = hint || '';
+    $('load-more').innerHTML = more || '';
+    tickNow();
+  }
+  function retryLoad() {
+    loadBox('กำลังพยายามเชื่อมต่ออีกครั้ง โปรดรอสักครู่...', '');
+    startLoadData(true, true);
   }
 
   function showError(error) {
@@ -4091,25 +4130,64 @@ body.mn-open{overflow:hidden}
     st.hidden = false;
     st.className = 'status error';
     var errText = (typeof error === 'string') ? error : (error && error.message ? error.message : "Unknown Error");
+    var isAuth = /authori|permission|สิทธิ์|PERMISSION_DENIED|ScriptError/i.test(errText) && !/หมดเวลา/.test(errText);
+    var isNet = /network|NetworkError|failed to fetch|หมดเวลา|timeout|HTTP \d|เซิร์ฟเวอร์|ติดต่อ/i.test(errText);
+    var cause = isAuth
+      ? '<p><b>สาเหตุ:</b> Google ไม่อนุญาตให้เรียกใช้สคริปต์ (สิทธิ์ / บัญชี Google)</p>' +
+        '<p><b>วิธีแก้:</b> ① ถ้าเปิดผ่านหน้าเว็บอื่น (เช่น github.io) ให้ลองเปิดลิงก์เว็บแอปโดยตรง ② ถ้าในเบราว์เซอร์ล็อกอิน Google หลายบัญชี ให้ใช้หน้าต่างไม่ระบุตัวตน (Incognito) หรือออกจากบัญชีอื่นก่อน ③ ผู้ดูแลระบบ: ตรวจว่า Deploy แบบ <b>Execute as: Me</b> และ <b>Who has access: Anyone</b> แล้ว Run <b>setupAuthSystem</b> 1 ครั้งเพื่อยอมรับสิทธิ์</p>'
+      : isNet
+      ? '<p><b>สาเหตุ:</b> เซิร์ฟเวอร์ของ Google ตอบช้าหรือการเชื่อมต่อขาดช่วง (มักเกิดเมื่อเปิดครั้งแรกหลังไม่มีคนใช้สักพัก)</p>' +
+        '<p><b>วิธีแก้:</b> กด <b>ลองโหลดข้อมูลอีกครั้ง</b> — ครั้งถัดไปจะเร็วขึ้นเพราะระบบเก็บผลประมวลผลไว้แล้ว ถ้ายังไม่ได้ ให้ตรวจสัญญาณอินเทอร์เน็ต หรือเปิดลิงก์เว็บแอปโดยตรง</p>'
+      : '<p><b>สาเหตุ:</b> ระบบอ่านข้อมูลจากชีตไม่สำเร็จ</p><p><b>วิธีแก้:</b> กด <b>ลองโหลดข้อมูลอีกครั้ง</b> ถ้ายังไม่ได้ ให้ผู้ดูแลระบบตรวจชื่อชีตและโครงสร้างข้อมูลตามข้อความด้านล่าง</p>';
     st.innerHTML =
-      '<h3>เกิดข้อผิดพลาดในการโหลดข้อมูล</h3>' +
-      '<p><b>สาเหตุหลัก:</b> Google ต้องการให้คุณยืนยันสิทธิ์ความปลอดภัย (Authorization)</p>' +
-      '<p><b>วิธีแก้ไข:</b> กลับไปหน้า Apps Script เลือกฟังก์ชัน <b>setupAuthSystem</b> แล้วกดปุ่ม <b>Run</b> ด้านบน จากนั้นกดยอมรับสิทธิ์ให้เรียบร้อย</p>' +
+      '<h3>เกิดข้อผิดพลาดในการโหลดข้อมูล</h3>' + cause +
       '<div class="errlog">Log: ' + esc(errText) + '</div>' +
       '<button class="btn primary" type="button" onclick="retryLoad()">ลองโหลดข้อมูลอีกครั้ง</button>';
   }
 
-  function startLoadData() {
+  /* โหลดข้อมูล: นับวินาทีที่รอแสดงไปเรื่อย ๆ จนกว่าข้อมูลจะมา · ลองใหม่อัตโนมัติ 1 ครั้งเมื่อการเชื่อมต่อพลาด */
+  var loadSeq = 0, slowTimer = null, tickTimer = null, loadStart = 0;
+  function tickNow() {
+    var e = document.getElementById('load-sec');
+    if (e && loadStart) e.textContent = Math.floor((Date.now() - loadStart) / 1000);
+  }
+  function startTick(reset) {
+    if (reset || !loadStart) loadStart = Date.now();
+    if (tickTimer) clearInterval(tickTimer);
+    tickNow(); tickTimer = setInterval(tickNow, 1000);
+  }
+  function stopTick() { if (tickTimer) clearInterval(tickTimer); tickTimer = null; loadStart = 0; }
+  function startLoadData(isRetry, resetClock) {
+    var seq = ++loadSeq;
+    startTick(!!resetClock || !isRetry);
+    if (loadTimeout) clearTimeout(loadTimeout);
+    if (slowTimer) clearTimeout(slowTimer);
+    slowTimer = setTimeout(function () {   // แจ้งว่ายังโหลดอยู่ (ไม่ใช่ข้อผิดพลาด) — ตัวเลขนับต่อ
+      if (seq !== loadSeq) return;
+      loadBox('กำลังโหลดข้อมูล ใช้เวลานานกว่าปกติเล็กน้อย', 'เซิร์ฟเวอร์ของ Google กำลังเริ่มทำงาน กรุณารอสักครู่...');
+    }, 10000);
+    var fail = function (err) {
+      if (seq !== loadSeq) return;
+      clearTimeout(slowTimer); clearTimeout(loadTimeout);
+      if (!isRetry) {   // ลองใหม่อัตโนมัติ 1 ครั้ง (ตัวเลขนับต่อจากเดิม)
+        loadBox('การเชื่อมต่อขัดข้อง กำลังลองใหม่อัตโนมัติ...', '');
+        setTimeout(function () { if (seq === loadSeq) startLoadData(true); }, 1500); return;
+      }
+      stopTick(); showError(err);
+    };
+    /* ครบ 60 วินาทียังไม่ได้ข้อมูล: ไม่ตัดจบ — ยังรอและนับต่อ พร้อมปุ่มให้ลองใหม่เองได้ */
+    loadTimeout = setTimeout(function () {
+      if (seq !== loadSeq) return;
+      loadBox('ยังรอข้อมูลจากเซิร์ฟเวอร์อยู่...', 'ระบบยังรอต่อให้อัตโนมัติ หากรอนานเกินไป กดปุ่มด้านล่างเพื่อเริ่มเชื่อมต่อใหม่',
+        '<button class="btn" type="button" onclick="retryLoad()">เริ่มเชื่อมต่อใหม่</button>');
+    }, 60000);
     try {
-      loadTimeout = setTimeout(function() {
-        showError(new Error("การเชื่อมต่อหมดเวลา (Timeout) - โปรดตรวจสอบว่าคุณได้กดยืนยันสิทธิ์สคริปต์แล้ว (Run 1 ครั้ง)"));
-      }, 12000);
       google.script.run
-        .withSuccessHandler(initDashboard)
-        .withFailureHandler(showError)
+        .withSuccessHandler(function (d) { if (seq !== loadSeq) return; clearTimeout(slowTimer); clearTimeout(loadTimeout); stopTick(); initDashboard(d); })
+        .withFailureHandler(fail)
         .getBudgetData(Auth.token());
     } catch (err) {
-      showError(err);
+      fail(err);
     }
   }
 
