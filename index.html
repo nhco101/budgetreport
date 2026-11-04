@@ -236,11 +236,20 @@ body:not(.au-authed) .side-links .side-link.auth-only{display:none!important}
 .donut-c .v{font-size:17.5px;font-weight:600}
 .donut-c .u{font-size:12.5px;color:var(--fg-3)}
 .alloc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-.alloc li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 8px;border-radius:8px;font-size:14.5px;cursor:default}
+.alloc li{display:grid;grid-template-columns:10px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px 8px;border-radius:8px;font-size:14.5px;cursor:default}
 .alloc li:hover,.alloc li.hl{background:var(--surface-2)}
 .alloc .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .alloc .nm small{color:var(--fg-3);margin-left:4px}
-.alloc .kc{color:var(--fg-3);font-size:12.5px;font-weight:400;margin-left:8px;font-variant-numeric:tabular-nums}
+.alloc .kc{color:var(--fg-3);font-size:12.5px;font-weight:400;white-space:nowrap;font-variant-numeric:tabular-nums}
+.alloc .kn{display:inline-block;min-width:2ch;text-align:right}
+/* หน้าจอ: ชื่อ | จำนวนรายการย่อย | % เรียงเป็นคอลัมน์ตรงกันทุกแถว (subgrid ใช้ความกว้างชื่อที่ยาวที่สุดร่วมกัน) */
+@supports (grid-template-columns:subgrid){
+  @media screen{
+    #app .alloc{display:grid;grid-template-columns:10px max-content max-content minmax(0,1fr);column-gap:10px;row-gap:2px}
+    #app .alloc li{grid-column:1 / -1;grid-template-columns:subgrid}
+    #app .alloc .pc{justify-self:end}
+  }
+}
 .alloc .pc{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-weight:600;color:var(--fg-2)}
 
 /* progress list */
@@ -639,9 +648,9 @@ html,body{margin:0}
   #print-container .pr-grid .nm b{white-space:nowrap}
   /* หมวดที่มีรายการมาก: legend แสดงเฉพาะรหัส, แถบเป็น 2 คอลัมน์ */
   #print-container .pr-grid.many .alloc{grid-template-columns:repeat(6,minmax(0,1fr))!important;column-gap:10px}
-  #print-container .pr-grid.many .alloc li{grid-template-columns:9px minmax(0,1fr) auto;gap:6px;padding:2px 4px}
+  #print-container .pr-grid.many .alloc li{grid-template-columns:9px minmax(0,1fr) auto auto;gap:6px;padding:2px 4px}
   #print-container .pr-grid.many .alloc .nm small{display:none}
-  #print-container .pr-grid .alloc .kc{font-size:11px;margin-left:5px}
+  #print-container .pr-grid .alloc .kc{font-size:11px}
   #print-container .pr-grid.many .alloc .kw{display:none}
   #print-container .pr-grid.many .alloc .kn::before{content:'('}
   #print-container .pr-grid.many .alloc .kn::after{content:')'}
@@ -4683,8 +4692,8 @@ body.mn-open{overflow:hidden}
       var share = sum ? d.totalBudget / sum * 100 : 0;
       var kc = '<span class="kc"><span class="kn">' + childCnt_(d, t) + '</span><span class="kw"> ' + ch + '</span></span>';
       return '<li data-i="' + i + '" data-tip="' + esc(amtTip(d, share, t)) + '" data-tip-mouse><i class="sw" style="background:' + cols[i] + '"></i><span class="nm">' +
-        (d.code ? '<b>' + esc(d.code) + '</b>' + kc + '<small>' + esc(d.name) + '</small>' : esc(d.name) + kc) +
-        '</span><span class="pc">' + fp(sum ? d.totalBudget / sum * 100 : 0) + '</span></li>';
+        (d.code ? '<b>' + esc(d.code) + '</b><small>' + esc(d.name) + '</small>' : esc(d.name)) +
+        '</span>' + kc + '<span class="pc">' + fp(sum ? d.totalBudget / sum * 100 : 0) + '</span></li>';
     }).join("");
   }
   /* สีของแถบ = % เบิกจ่ายจริง (รวมผูกพัน) เทียบกับ %แผนที่ตั้งไว้ ตามเกณฑ์ใน lvl() */
