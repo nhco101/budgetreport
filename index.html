@@ -240,6 +240,7 @@ body:not(.au-authed) .side-links .side-link.auth-only{display:none!important}
 .alloc li:hover,.alloc li.hl{background:var(--surface-2)}
 .alloc .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .alloc .nm small{color:var(--fg-3);margin-left:4px}
+.alloc .kc{color:var(--fg-3);font-size:12.5px;font-weight:400;margin-left:8px;font-variant-numeric:tabular-nums}
 .alloc .pc{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-weight:600;color:var(--fg-2)}
 
 /* progress list */
@@ -640,6 +641,10 @@ html,body{margin:0}
   #print-container .pr-grid.many .alloc{grid-template-columns:repeat(6,minmax(0,1fr))!important;column-gap:10px}
   #print-container .pr-grid.many .alloc li{grid-template-columns:9px minmax(0,1fr) auto;gap:6px;padding:2px 4px}
   #print-container .pr-grid.many .alloc .nm small{display:none}
+  #print-container .pr-grid .alloc .kc{font-size:11px;margin-left:5px}
+  #print-container .pr-grid.many .alloc .kw{display:none}
+  #print-container .pr-grid.many .alloc .kn::before{content:'('}
+  #print-container .pr-grid.many .alloc .kn::after{content:')'}
   #print-container .pr-grid.many .donut-wrap{align-items:center}
   #print-container .pr-grid.many .scale{display:none!important}
   #print-container .pr-grid.many .card{break-inside:auto}
@@ -4652,8 +4657,18 @@ body.mn-open{overflow:hidden}
 
   /* ---------- ชิ้นส่วนที่ใช้ร่วมกันระหว่างหน้าจอและรายงานพิมพ์ ---------- */
   /** ข้อความ tooltip แสดงยอดเงินของรายการ (ใช้กับรายการใต้กราฟวงกลม และแถบเบิกจ่าย) */
-  function amtTip(d, sharePct) {
+  /** จำนวนรายการระดับถัดไป (แผนงาน/โครงการ/กิจกรรม) ของ d ในมุมมอง type */
+  function childCnt_(d, type) { try { return childItems_(d, type || current).length; } catch (e) { return 0; } }
+  function childTotal_(list, type) { return list.reduce(function(s, d){ return s + childCnt_(d, type); }, 0); }
+  /** คำบรรยายใต้หัวการ์ดกราฟวงกลม: "จำแนกตามแผนงาน 8 รายการ · รวม 30 โครงการ" */
+  function donutSubText_(list, type) {
+    var v = VIEWS[type];
+    return 'จำแนกตาม' + v.unit + ' ' + list.length + ' รายการ · รวม\u00a0' + childTotal_(list, type).toLocaleString('en-US') + '\u00a0' + v.child;   /* NBSP: ไม่ตัดบรรทัดกลาง "รวม 30 โครงการ" */
+  }
+  function amtTip(d, sharePct, type) {
+    var t = type || current;
     return (d.code ? d.code + ' · ' : '') + d.name +
+      '\nจำนวน' + VIEWS[t].child + ': ' + childCnt_(d, t) +
       '\nงบประมาณรวม: ' + f(d.totalBudget) + ' บาท' + (sharePct != null ? ' (' + fp(sharePct) + ' ของทั้งหมด)' : '') +
       '\nเบิกจ่ายจริง: ' + f(d.actualPaid) + ' บาท' +
       '\nงบผูกพัน: ' + f(d.committed) + ' บาท' +
@@ -4661,12 +4676,14 @@ body.mn-open{overflow:hidden}
       '\nคงเหลือสุทธิ: ' + f(d.netBalance) + ' บาท' +
       '\n%แผนที่ตั้งไว้ (' + currentMonthLabel + '): ' + fp(d.plannedPct);
   }
-  function allocHTML(list, cols) {
+  function allocHTML(list, cols, type) {
+    var t = type || current, ch = VIEWS[t].child;
     var sum = list.reduce(function(s, d){ return s + (d.totalBudget || 0); }, 0);
     return list.map(function(d, i) {
       var share = sum ? d.totalBudget / sum * 100 : 0;
-      return '<li data-i="' + i + '" data-tip="' + esc(amtTip(d, share)) + '" data-tip-mouse><i class="sw" style="background:' + cols[i] + '"></i><span class="nm">' +
-        (d.code ? '<b>' + esc(d.code) + '</b><small>' + esc(d.name) + '</small>' : esc(d.name)) +
+      var kc = '<span class="kc"><span class="kn">' + childCnt_(d, t) + '</span><span class="kw"> ' + ch + '</span></span>';
+      return '<li data-i="' + i + '" data-tip="' + esc(amtTip(d, share, t)) + '" data-tip-mouse><i class="sw" style="background:' + cols[i] + '"></i><span class="nm">' +
+        (d.code ? '<b>' + esc(d.code) + '</b>' + kc + '<small>' + esc(d.name) + '</small>' : esc(d.name) + kc) +
         '</span><span class="pc">' + fp(sum ? d.totalBudget / sum * 100 : 0) + '</span></li>';
     }).join("");
   }
@@ -4677,10 +4694,10 @@ body.mn-open{overflow:hidden}
       '<span><i class="lg-plan"></i>%แผนที่ตั้งไว้ (' + currentMonthLabel + ')</span>' +
       (perf ? '<span><i class="lg-perf"></i>%ดำเนินงาน</span>' : '');
   }
-  function barsHTML(list, perf) {
+  function barsHTML(list, perf, type) {
     return list.map(function(d, i) {
       var u = Math.max(0, Math.min(d.usedPct || 0, 100)), L = lvl(d.usedPct, d.plannedPct);
-      return '<div class="prow" data-i="' + i + '" tabindex="0" role="button" data-tip="' + esc(amtTip(d)) + '" data-tip-mouse>' +
+      return '<div class="prow" data-i="' + i + '" tabindex="0" role="button" data-tip="' + esc(amtTip(d, null, type)) + '" data-tip-mouse>' +
         '<div class="nm">' + (d.code ? '<b class="num">' + esc(d.code) + '</b><span>' + esc(d.name) + '</span>' : '<b>' + esc(d.name) + '</b>') + '</div>' +
         '<div class="track"><div class="fill bg-' + L + '" style="width:' + u + '%"></div>' +
           '<div class="mk-plan" style="left:' + Math.min(d.plannedPct || 0, 100) + '%"></div>' +
@@ -4696,7 +4713,7 @@ body.mn-open{overflow:hidden}
     var v = VIEWS[current], cols = palette(list.length);
     var sum = list.reduce(function(s, d){ return s + (d.totalBudget || 0); }, 0);
     $('donutTotal').textContent = formatNumber(sum / 1e6);
-    $('donutSub').textContent = 'จำแนกตาม' + v.unit + ' ' + list.length + ' รายการ';
+    $('donutSub').textContent = donutSubText_(list, current);
     $('alloc').innerHTML = allocHTML(list, cols);
 
     if (donutChart) donutChart.destroy();
@@ -5079,13 +5096,13 @@ body.mn-open{overflow:hidden}
     var h = '<section class="pr-sec' + (first ? ' first' : '') + '">';
     h += '<div class="pr-title"><span class="pr-num">' + num + '</span><span>' + title + '</span><span class="pr-count">' + list.length + ' รายการ</span></div>';
     h += '<div class="pr-grid' + (many ? ' many' : '') + '">';
-    h += '<article class="card"><div class="card-h"><div><h2><span class="vf-st" data-vf="donut:' + type + '"></span>สัดส่วนการจัดสรรงบประมาณ</h2><p>จำแนกตาม' + v.unit + ' ' + list.length + ' รายการ</p></div></div>' +
+    h += '<article class="card"><div class="card-h"><div><h2><span class="vf-st" data-vf="donut:' + type + '"></span>สัดส่วนการจัดสรรงบประมาณ</h2><p>' + esc(donutSubText_(list, type)) + '</p></div></div>' +
          '<div class="card-b"><div class="donut-wrap"><div class="donut"><img src="' + p.pie.toBase64Image() + '" alt="">' +
          '<div class="donut-c"><span class="t">งบประมาณรวม</span><span class="v num">' + formatNumber(sum / 1e6) + '</span><span class="u">ล้านบาท</span></div></div>' +
-         '<ul class="alloc">' + allocHTML(list, p.colors) + '</ul></div></div></article>';
+         '<ul class="alloc">' + allocHTML(list, p.colors, type) + '</ul></div></div></article>';
     h += '<article class="card"><div class="card-h"><div><h2><span class="vf-st" data-vf="progress:' + type + '"></span>ประสิทธิภาพการเบิกจ่ายเทียบกับแผน (%)</h2></div><div class="legend">' + legendHTML(v.perf) + '</div></div>' +
          '<div class="card-b"><div class="scale"><div></div><div><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><div></div></div>' +
-         '<div class="plist">' + barsHTML(list, v.perf) + '</div></div></article>';
+         '<div class="plist">' + barsHTML(list, v.perf, type) + '</div></div></article>';
     h += '</div>';
     h += '<article class="card pr-table' + (list.length <= 12 ? ' small' : '') + '"><div class="card-h"><div><h2><span class="vf-st" data-vf="table:' + type + '"></span>ตารางสรุปราย' + v.unit + '</h2></div></div><div class="tbl-wrap"><table><thead>' + headRow(v.code, v.codeH, v.unit, v.perf) + '</thead><tbody>' +
          list.map(function(d, i){ return bodyRow(d, i, v.code, v.perf, '', '', true); }).join('') + totalRow(globalData.total, v.code, v.perf) +
