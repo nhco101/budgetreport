@@ -14,7 +14,7 @@
   (function () {
     /* เซิร์ฟเวอร์ Google บางครั้งตอบ 404 / 429 / 5xx ชั่วคราว (ยังไม่ได้รันสคริปต์) → ลองใหม่อัตโนมัติ
        ฟังก์ชันอ่านอย่างเดียวลองใหม่ได้ทุกกรณี ส่วนฟังก์ชันบันทึกข้อมูลลองใหม่เฉพาะเมื่อแน่ใจว่าคำขอยังไม่ถูกประมวลผล */
-    var READ_ONLY = { getBudgetData: 1, getSourceLink: 1, appFiscalYear: 1, getManualImages: 1, authMe: 1,
+    var READ_ONLY = { getBudgetData: 1, getSourceLink: 1, appFiscalYear: 1, getManualImages: 1, api_specDoc: 1, authMe: 1,
       authAdminContacts: 1, adminListUsers: 1, adminGetLogs: 1, webDataInfo: 1, webCalcSettings: 1, webSideLinksGet: 1 };
     var RETRY_STATUS = { 404: 1, 408: 1, 429: 1, 500: 1, 502: 1, 503: 1, 504: 1 };
     var WAIT = [1500, 3000, 5000];   // ลองใหม่สูงสุด 3 ครั้ง
@@ -188,6 +188,10 @@ button{font-family:inherit}
 body:not(.au-authed) .side-links .side-link.auth-only{display:none!important}
 /* เมนูแฮมเบอร์เกอร์ (มือถือ/แท็บเล็ต): ลิงก์ระบบอื่นเปิดเป็นแผงด้านขวา */
 .side-head,.nav-btn,.nav-scrim{display:none}
+/* หมวดช่วยเหลือ (เฉพาะ Superadmin): Spec ระบบ */
+.side-help{display:contents}
+.side-help[hidden]{display:none}
+.side-cat{grid-column:1/-1;font-size:12.5px;letter-spacing:.06em;color:var(--fg-3);padding:6px 2px 0}
 @media screen and (max-width:1080px){
   .nav-btn:not([hidden]){display:inline-flex;width:38px;padding:0;justify-content:center;flex:none}
   .nav-btn svg{width:20px;height:20px}
@@ -231,7 +235,7 @@ body:not(.au-authed) .side-links .side-link.auth-only{display:none!important}
 .donut-c .t{font-size:12.5px;color:var(--fg-3)}
 .donut-c .v{font-size:17.5px;font-weight:600}
 .donut-c .u{font-size:12.5px;color:var(--fg-3)}
-.alloc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:300px;overflow-y:auto}
+.alloc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .alloc li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 8px;border-radius:8px;font-size:14.5px;cursor:default}
 .alloc li:hover,.alloc li.hl{background:var(--surface-2)}
 .alloc .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -246,7 +250,7 @@ body:not(.au-authed) .side-links .side-link.auth-only{display:none!important}
 .lg-grp>span{display:inline-flex;align-items:center;gap:4px}
 .lg-plan{width:3px;height:14px;border-radius:2px;background:var(--plan)}
 .lg-perf{width:9px;height:9px;border-radius:50%;background:var(--surface);border:2.5px solid var(--perf)}
-.plist{display:flex;flex-direction:column;max-height:340px;overflow-y:auto;padding-right:4px}
+.plist{display:flex;flex-direction:column}
 .prow{display:grid;grid-template-columns:minmax(120px,210px) minmax(0,1fr) 172px;gap:14px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
 .prow:last-child{border-bottom:0}
 .prow:hover{background:var(--surface-2)}
@@ -287,17 +291,17 @@ td.busy .pf-box{opacity:.5;pointer-events:none}
 /* status pill */
 .pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:999px;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;white-space:nowrap}
 .pill.good{background:var(--good-bg);color:var(--good)}
-.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.warn{background:var(--under-bg);color:var(--under)}
 .pill.bad{background:var(--bad-bg);color:var(--bad)}
-.t-good{color:var(--good)} .t-warn{color:var(--warn)} .t-bad{color:var(--bad)}
-.bg-good{background:var(--good)} .bg-warn{background:var(--warn)} .bg-bad{background:var(--bad)}
+.t-good{color:var(--good)} .t-warn{color:var(--under)} .t-bad{color:var(--bad)}
+.bg-good{background:var(--good)} .bg-warn{background:var(--under)} .bg-bad{background:var(--bad)}
 
 /* table */
 .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .search{display:flex;align-items:center;gap:6px;height:36px;border:1px solid var(--line-2);border-radius:9px;padding:0 10px;background:var(--surface);color:var(--fg-3)}
 .search input{border:0;outline:0;background:transparent;color:var(--fg);font-family:inherit;font-size:15px;width:200px}
 .hint{font-size:13.5px;color:var(--fg-3)}
-.tbl-wrap{overflow:auto;max-height:560px;border-top:1px solid var(--line);margin-top:14px;border-radius:0 0 var(--r) var(--r)}
+.tbl-wrap{overflow-x:auto;overflow-y:hidden;border-top:1px solid var(--line);margin-top:14px;border-radius:0 0 var(--r) var(--r)}
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px}
 th,td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle;background:var(--surface)}
 td{vertical-align:top}
@@ -387,7 +391,7 @@ tr.total td.r{font-size:15px}
 :root{--brand:#1B3A5C;--brand-2:#2B5C8A;--brand-3:#8FAECB;--brand-tint:#E6EDF5;
 --bg:#F3F4F6;--surface:#FFFFFF;--surface-2:#F7F8FA;--line:#E3E6EB;--line-2:#CDD3DB;
 --fg:#111827;--fg-2:#4B5563;--fg-3:#8A93A0;
---good:#0F8A5F;--good-bg:#E2F4EC;--warn:#B86E00;--warn-bg:#FDF1DC;--bad:#C73E3A;--bad-bg:#FBE7E6;
+--good:#0F8A5F;--good-bg:#E2F4EC;--warn:#B86E00;--warn-bg:#FDF1DC;--under:#D9465F;--under-bg:#FCE8EC;--bad:#C73E3A;--bad-bg:#FBE7E6;
 --plan:#C98200;--perf:#0E8C99;
 --band-bg:#1B3A5C;--band-fg:#FFFFFF;--band-sub:rgba(255,255,255,.72);--band-track:rgba(255,255,255,.16);--band-line:rgba(255,255,255,.16);--band-chip:rgba(255,255,255,.12);
 --seg-a:#FFFFFF;--seg-c:#7FB2E5;--mark:#F5B841;
@@ -396,7 +400,7 @@ tr.total td.r{font-size:15px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#7FAEDB;--brand-2:#9CC2E8;--brand-3:#3B5F85;--brand-tint:#1C2C40;
 --bg:#0F141B;--surface:#171E27;--surface-2:#1D2631;--line:#28323F;--line-2:#364252;
 --fg:#E5E9EF;--fg-2:#A8B2C0;--fg-3:#758091;
---good:#34D399;--good-bg:#11322A;--warn:#F5A524;--warn-bg:#3A2A10;--bad:#F87171;--bad-bg:#3B1C1C;
+--good:#34D399;--good-bg:#11322A;--warn:#F5A524;--warn-bg:#3A2A10;--under:#FB7185;--under-bg:#3D1A22;--bad:#F87171;--bad-bg:#3B1C1C;
 --plan:#F5B841;--perf:#3CC6D2;
 --band-bg:#16283D;--band-fg:#FFFFFF;--band-sub:rgba(255,255,255,.7);--band-track:rgba(255,255,255,.14);--band-line:rgba(255,255,255,.14);--band-chip:rgba(255,255,255,.1);
 --seg-a:#E5E9EF;--seg-c:#4F86BD;--mark:#F5B841;
@@ -405,7 +409,7 @@ tr.total td.r{font-size:15px}
 :root[data-theme="dark"]{--brand:#7FAEDB;--brand-2:#9CC2E8;--brand-3:#3B5F85;--brand-tint:#1C2C40;
 --bg:#0F141B;--surface:#171E27;--surface-2:#1D2631;--line:#28323F;--line-2:#364252;
 --fg:#E5E9EF;--fg-2:#A8B2C0;--fg-3:#758091;
---good:#34D399;--good-bg:#11322A;--warn:#F5A524;--warn-bg:#3A2A10;--bad:#F87171;--bad-bg:#3B1C1C;
+--good:#34D399;--good-bg:#11322A;--warn:#F5A524;--warn-bg:#3A2A10;--under:#FB7185;--under-bg:#3D1A22;--bad:#F87171;--bad-bg:#3B1C1C;
 --plan:#F5B841;--perf:#3CC6D2;
 --band-bg:#16283D;--band-fg:#FFFFFF;--band-sub:rgba(255,255,255,.7);--band-track:rgba(255,255,255,.14);--band-line:rgba(255,255,255,.14);--band-chip:rgba(255,255,255,.1);
 --seg-a:#E5E9EF;--seg-c:#4F86BD;--mark:#F5B841;
@@ -422,6 +426,7 @@ tr.total td.r{font-size:15px}
   .side-links .side-head{display:block;padding:0 12px 8px;font-size:12.5px;font-weight:400;letter-spacing:.06em;color:var(--nav-fg);opacity:.8}
   .side-links .side-head b{font-weight:400}
   .side-links .nav-x{display:none}
+  .side-links .side-cat{color:var(--nav-fg);opacity:.8;padding:12px 12px 6px;border-top:1px solid rgba(255,255,255,.12);margin-top:6px}
   .side-link{background:transparent;color:var(--nav-fg);padding:9px 12px;font-size:15.5px}
   .side-link:hover{background:rgba(255,255,255,.08);color:#fff}
   .side-link.off{opacity:.6}
@@ -436,7 +441,7 @@ tr.total td.r{font-size:15px}
   .switch button[aria-selected="true"] .cnt{background:#E6EDF5;color:#1B3A5C}
 }
 @media (prefers-color-scheme:dark) and (min-width:1081px){:root:not([data-theme="light"]) .switch button[aria-selected="true"]{color:#16283D}}
-@media (min-width:1081px){.grid2{grid-template-columns:minmax(300px,330px) minmax(0,1fr)}.donut-wrap{grid-template-columns:1fr;justify-items:center}.alloc{width:100%;max-height:240px}}
+@media (min-width:1081px){.grid2{grid-template-columns:minmax(300px,330px) minmax(0,1fr)}.donut-wrap{grid-template-columns:1fr;justify-items:center}.alloc{width:100%}}
 tr.total td{border-top-color:var(--brand)}
 
 
@@ -569,7 +574,7 @@ html,body{margin:0}
     --brand:#1B3A5C;--brand-2:#2B5C8A;--brand-3:#8FAECB;--brand-tint:#E6EDF5;
     --bg:#FFFFFF;--surface:#FFFFFF;--surface-2:#F7F8FA;--line:#E3E6EB;--line-2:#CDD3DB;
     --fg:#111827;--fg-2:#4B5563;--fg-3:#8A93A0;
-    --good:#0F8A5F;--good-bg:#E2F4EC;--warn:#B86E00;--warn-bg:#FDF1DC;--bad:#C73E3A;--bad-bg:#FBE7E6;
+    --good:#0F8A5F;--good-bg:#E2F4EC;--warn:#B86E00;--warn-bg:#FDF1DC;--under:#D9465F;--under-bg:#FCE8EC;--bad:#C73E3A;--bad-bg:#FBE7E6;
     --plan:#C98200;--perf:#0E8C99;
     --band-bg:#1B3A5C;--band-fg:#FFFFFF;--band-sub:rgba(255,255,255,.72);--band-track:rgba(255,255,255,.16);--band-line:rgba(255,255,255,.16);--band-chip:rgba(255,255,255,.12);
     --seg-a:#FFFFFF;--seg-c:#7FB2E5;--mark:#F5B841;--shadow:none;color-scheme:light;
@@ -760,7 +765,7 @@ select.au-in{padding-right:8px}
 .au-role.admin{background:var(--warn-bg);color:var(--warn)}
 .au-role.super{background:#3B2C8F;color:#fff}
 .au-d-steps{margin:12px 18px 0;padding:10px 14px;border-radius:10px;background:var(--surface-2);font-size:14.5px;color:var(--fg-2);line-height:1.6}
-.au-d-prev{overflow:auto;border:1px solid var(--line);border-radius:10px;max-height:240px}
+.au-d-prev{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:10px}
 .au-d-prev table{border-collapse:collapse;width:100%;font-size:13.5px}
 .au-d-prev td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
 .au-acts .btn.sm svg{width:15px;height:15px}
@@ -800,7 +805,7 @@ select.au-in{padding-right:8px}
 .au-filters .au-in{height:38px;font-size:15px}
 .au-filters .au-fld > label{font-size:13.5px}
 .au-filters .acts{display:flex;gap:8px}
-.au-tw{overflow:auto;max-height:620px;border-top:1px solid var(--line);margin-top:14px;border-radius:0 0 var(--r) var(--r)}
+.au-tw{overflow-x:auto;overflow-y:hidden;border-top:1px solid var(--line);margin-top:14px;border-radius:0 0 var(--r) var(--r)}
 .au-tw table{min-width:980px}
 .au-tw td{font-size:15px}
 .au-tw td.mono,.mono{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
@@ -885,7 +890,7 @@ select.au-in{padding-right:8px}
 .card-h h2{display:flex;align-items:center}
 .kpi{position:relative}
 .card-h{position:relative}
-.au-tipbox{position:fixed;z-index:130;max-width:360px;background:#1A1A2E;color:#fff;font-size:13.5px;line-height:1.55;padding:8px 11px;border-radius:9px;white-space:pre-line;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;font-family:var(--f-th)}
+.au-tipbox{position:fixed;z-index:130;max-width:min(460px,calc(100vw - 24px));background:#1A1A2E;color:#fff;font-size:13.5px;line-height:1.55;padding:8px 11px;border-radius:9px;white-space:pre-line;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;font-family:var(--f-th)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .au-tipbox{background:#ECEBF7;color:#12111F}}
 .mstats .ms{position:relative}
 .mstats .ms .l{display:flex;align-items:center}
@@ -1008,6 +1013,7 @@ body.au-sm-open{overflow:hidden}
 .smx-box.sm.wrap{white-space:normal;max-width:160px;align-items:flex-start}
 .smx-box.sm.wrap .ic{margin-top:2px}
 .smx-box.sm .ic{width:auto;height:auto;background:none}
+.smx-box.sm.only{border:1.5px dashed var(--c)}
 .smx-stack{display:flex;flex-direction:column;gap:8px;padding-top:26px;position:relative;align-items:stretch}
 .smx-stack::before{content:"";position:absolute;top:0;left:50%;height:26px;border-left:2px solid var(--lc)}
 .smx-stack.nol{padding-top:0}.smx-stack.nol::before{display:none}
@@ -1041,7 +1047,7 @@ html.busy-lock .au-toast,html.busy-lock .toast{z-index:2147483001}
 .au-c-sum > div b{font-size:19px;color:var(--brand,#1B3A5C)}
 .au-c-sum > div small{font-size:12.5px;color:var(--fg-3)}
 .au-c-sum > div.mute{justify-content:center}
-.au-imp-tw{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.au-imp-tw{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:10px}
 table.au-imp{width:100%;border-collapse:collapse;font-size:14px}
 table.au-imp th{position:sticky;top:0;background:var(--surface-2,#F6F8FB);text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 table.au-imp td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -1081,6 +1087,13 @@ table.au-k tr.hid td{opacity:.55}
 .au-sys-n{width:24px;height:24px;border-radius:50%;background:#1B3A5C;color:#fff;font-size:13px;display:grid;place-items:center}
 .au-warn-s{margin:0;font-size:13px;color:#9A5B00;background:#FFF6E5;border-radius:8px;padding:6px 10px}
 @media (max-width:820px){.au-sys{grid-template-columns:1fr}}
+
+/* ---------- ข้อมูลพนักงาน / ด่านรหัสพนักงาน (v83) ---------- */
+table.au-emp th,table.au-emp td{white-space:nowrap}
+table.au-emp th.au-e-idh,table.au-imp th.au-e-idh{color:var(--brand)}
+.au-emp-hint{margin:-4px 0 2px;padding:8px 12px;border-radius:9px;background:var(--surface-2);border:1px dashed var(--line-2);color:var(--fg-2);font-size:14px}
+.au-emp-hint::before{content:"ℹ️ "}
+@media (max-width:860px){table.au-emp th,table.au-emp td{white-space:normal}}
 </style>
 
 </head>
@@ -1150,6 +1163,7 @@ table.au-k tr.hid td{opacity:.55}
   <div class="side-links" id="side-links" hidden>
     <div class="side-head"><b>ลิงก์ระบบอื่น</b><button type="button" class="nav-x" id="nav-x" aria-label="ปิดเมนู"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>
     <div class="side-list" id="side-list"></div>
+    <div class="side-help" id="side-help" hidden><div class="side-cat">ช่วยเหลือ (ผู้ดูแล)</div><a class="side-link" href="#" id="side-spec" title="เอกสาร Spec ระบบ — เฉพาะ Superadmin"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></i><span>Spec ระบบ</span></a></div>
   </div>
   </div>
 
@@ -1230,6 +1244,20 @@ table.au-k tr.hid td{opacity:.55}
       <!-- ตรวจสอบ session -->
       <section class="au-step on" data-step="checking" aria-live="polite">
         <div style="display:flex;gap:12px;align-items:center;color:var(--brand)"><span class="au-spin"></span> กำลังตรวจสอบการเข้าสู่ระบบ...</div>
+      </section>
+
+      <!-- ด่านรหัสพนักงาน (ผู้เยี่ยมชม ก่อนเข้าดู Dashboard) -->
+      <section class="au-step" data-step="emp">
+        <h2>ยืนยันรหัสพนักงาน</h2>
+        <p class="sub">กรอกรหัสพนักงาน สช. ของท่าน เพื่อเข้าดู Dashboard</p>
+        <form class="au-f" id="au-f-emp" novalidate autocomplete="off">
+          <div class="au-msg" id="au-m-emp" role="alert"></div>
+          <div class="au-fld"><label for="au-e-id">รหัสพนักงาน</label>
+            <input class="au-in" id="au-e-id" name="employeeId" autocapitalize="characters" spellcheck="false" inputmode="text" maxlength="40" required></div>
+          <p class="au-hint au-emp-hint">หากไม่ทราบรหัสพนักงาน รบกวนสอบถามจาก HR</p>
+          <button class="btn primary au-btn-block" type="submit">เข้าดู Dashboard</button>
+          <div class="au-row"><span class="au-hint">มีบัญชีผู้ใช้ของระบบ?</span><button type="button" class="au-link" data-go="login">เข้าสู่ระบบ →</button></div>
+        </form>
       </section>
 
       <!-- เข้าสู่ระบบ -->
@@ -1323,6 +1351,8 @@ table.au-k tr.hid td{opacity:.55}
   <nav class="au-tabs" role="tablist">
     <button type="button" role="tab" data-pane="users" aria-selected="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>ผู้ใช้งานและสิทธิ์</button>
+    <button type="button" role="tab" data-pane="emp" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0M15 9h3M15 13h3"/></svg>ข้อมูลพนักงาน</button>
     <button type="button" role="tab" data-pane="logs" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/></svg>Log การใช้งานระบบ</button>
     <button type="button" role="tab" data-pane="data" aria-selected="false">
@@ -1357,6 +1387,38 @@ table.au-k tr.hid td{opacity:.55}
         <tbody id="au-u-body"></tbody>
       </table></div>
       <div class="au-pager" id="au-u-pager"></div>
+    </article>
+  </div>
+
+  <!-- แท็บข้อมูลพนักงาน สช. (สิทธิ์จัดการผู้ใช้งาน) -->
+  <div class="au-pane-c" data-pane-c="emp" style="display:none;flex-direction:column;gap:18px">
+    <div class="au-stats" id="au-e-stats"></div>
+    <article class="card">
+      <div class="card-h">
+        <div><h2>ข้อมูลพนักงาน สช.</h2><p id="au-e-count">-</p></div>
+        <div class="au-tools">
+          <input class="au-in" id="au-e-q" type="search" placeholder="ค้นหารหัส ชื่อ หรือข้อมูลอื่น" aria-label="ค้นหาพนักงาน">
+          <button class="btn" type="button" data-act="emp-add" id="au-e-add" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>เพิ่มพนักงาน</button>
+          <button class="btn primary" type="button" data-act="emp-import">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>นำเข้าข้อมูลพนักงาน</button>
+          <button class="btn" type="button" data-act="emp-export" id="au-e-export" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>ส่งออก Excel</button>
+          <button class="btn danger-o" type="button" data-act="emp-del-all" id="au-e-del-all" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>ลบทั้งหมด</button>
+          <input type="file" id="au-e-file" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+      </div>
+      <div class="au-d-steps">
+        <label class="au-check" style="margin-bottom:6px"><input type="checkbox" id="au-e-gate"><span><b>ให้ผู้เยี่ยมชมกรอกรหัสพนักงานก่อนเข้าดู Dashboard</b>
+          <small>ระบบตรวจว่ารหัสตรงกับข้อมูลพนักงานในหน้านี้ (ผ่านแล้วใช้ได้ 10 ชม.) · ผู้ที่เข้าสู่ระบบด้วยบัญชีผู้ใช้ไม่ต้องกรอก · ทำงานเมื่อมีข้อมูลพนักงานอย่างน้อย 1 รายการ</small></span></label>
+        <b>นำเข้า:</b> เลือกไฟล์ Excel (.xlsx / .xls) หรือ .csv ที่มีคอลัมน์ <b>"รหัสพนักงาน"</b> — ระบบเก็บ<b>ทุกฟิลด์ตามหัวคอลัมน์ในไฟล์</b> แล้วเลือกได้ว่าจะแทนที่ทั้งหมด หรือเพิ่ม/ปรับปรุงจากข้อมูลเดิม
+      </div>
+      <div class="au-tw"><table class="au-emp">
+        <thead id="au-e-head"></thead>
+        <tbody id="au-e-body"></tbody>
+      </table></div>
+      <div class="au-pager" id="au-e-pager"></div>
     </article>
   </div>
 
@@ -1573,11 +1635,12 @@ var Busy = (function () {
 var Auth = (function () {
   'use strict';
   var STORE_KEY = 'bd_auth_token_v1';
-  var IDLE_MIN = 30;    // ไม่มีการใช้งานกี่นาทีจึงออกจากระบบอัตโนมัติ
+  var EMP_KEY = 'bd_emp_pass_v1';   // บัตรผ่านด่านรหัสพนักงาน (อายุ 10 ชม. ตรวจที่ server)
+  var IDLE_MIN = 600;   // ไม่มีการใช้งานกี่นาทีจึงออกจากระบบอัตโนมัติ (10 ชม. — ตรงกับ AUTH.SESSION_TTL_SEC)
   var PING_MIN = 10;    // ต่ออายุ session ทุกกี่นาทีขณะมีการใช้งาน
 
   var S = { token: null, user: null, pendingUser: null, booted: false, lastAct: Date.now(), lastPing: Date.now(),
-            users: [], labels: {}, logPage: 1, tempPw: '', modalSubmit: null };
+            users: [], labels: {}, logPage: 1, tempPw: '', modalSubmit: null, gate: false };
   var NO_PERMS = { canExport: false, canPrint: false, canDownload: false, isAdmin: false, canManageUsers: false, canViewLogs: false, canPurgeLogs: false, canManageData: false, canEditCalc: false, canBackoffice: false, isSuperadmin: false };
   var ROLE_RANK = { User: 1, Admin: 2, Superadmin: 3 };
   function roleCls(r) { return r === 'Superadmin' ? ' super' : (r === 'Admin' ? ' admin' : ''); }
@@ -1592,6 +1655,7 @@ var Auth = (function () {
     del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
     book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h5"/></svg>',
     sitemap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="9" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5V17M12 12v5"/></svg>',
+    spec: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>',
     shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -1608,6 +1672,8 @@ var Auth = (function () {
   function val(id) { var e = el(id); return e ? String(e.value || '').trim() : ''; }
   function store(t) { try { if (t) sessionStorage.setItem(STORE_KEY, t); else sessionStorage.removeItem(STORE_KEY); } catch (e) {} }
   function stored() { try { return sessionStorage.getItem(STORE_KEY); } catch (e) { return null; } }
+  function empPass() { try { return localStorage.getItem(EMP_KEY) || ''; } catch (e) { return ''; } }
+  function empStore(p) { try { if (p) localStorage.setItem(EMP_KEY, p); else localStorage.removeItem(EMP_KEY); } catch (e) {} }
   function errText(e) { return (e && e.message) ? e.message : (typeof e === 'string' ? e : 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้'); }
   function pad(n) { return ('0' + n).slice(-2); }
   function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -1701,7 +1767,7 @@ var Auth = (function () {
     adminUnlockUser: 'กำลังปลดล็อกบัญชี...', adminPurgeLogs: 'กำลังล้าง Log...', adminExportLogs: 'กำลังดึงข้อมูล Log สำหรับดาวน์โหลด...',
     verifySet: 'กำลังบันทึกการยืนยันข้อมูล...', webDataBackup: 'กำลังดึงข้อมูลสำหรับไฟล์สำรอง...',
     webDataClear: 'กำลังล้างข้อมูลในชีต...', webDataUpload: 'กำลังอัปโหลดข้อมูลใหม่ลงชีต...',
-    webSaveCalcSettings: 'กำลังบันทึกการตั้งค่าการคำนวณ...', webSideLinksSave: 'กำลังบันทึกลิงก์ระบบอื่น...', webSettingsExport: 'กำลังเตรียมไฟล์ค่าตั้งระบบ...', adminImportUsers: 'กำลังนำเข้าผู้ใช้งาน...'
+    webSaveCalcSettings: 'กำลังบันทึกการตั้งค่าการคำนวณ...', webSideLinksSave: 'กำลังบันทึกลิงก์ระบบอื่น...', webSettingsExport: 'กำลังเตรียมไฟล์ค่าตั้งระบบ...', adminImportUsers: 'กำลังนำเข้าผู้ใช้งาน...', adminEmpImport: 'กำลังนำเข้าข้อมูลพนักงาน...', adminEmpSave: 'กำลังบันทึกข้อมูลพนักงาน...', adminEmpDelete: 'กำลังลบข้อมูลพนักงาน...', adminEmpGate: 'กำลังบันทึกการตั้งค่า...', api_specDoc: 'กำลังเปิดเอกสาร Spec ระบบ...'
   };
   function call(fn) {
     var args = Array.prototype.slice.call(arguments, 1);
@@ -1764,9 +1830,10 @@ var Auth = (function () {
   function step(name, focus) {
     el('au-login').hidden = false;
     document.body.classList.add('au-view-login');
-    el('au-back').hidden = (name === 'force');
+    el('au-back').hidden = (name === 'force' || name === 'emp');
+    el('au-back').textContent = S.gate ? '← กลับไปกรอกรหัสพนักงาน' : '← กลับไปหน้า Dashboard';
     qa('.au-step').forEach(function (s) { s.classList.toggle('on', s.getAttribute('data-step') === name); });
-    ['login', 'forgot1', 'forgot2', 'force'].forEach(function (k) { if (k !== name) msg('au-m-' + k); });
+    ['emp', 'login', 'forgot1', 'forgot2', 'force'].forEach(function (k) { if (k !== name) msg('au-m-' + k); });
     if (focus !== false) {
       var first = qa('.au-step.on input:not([type=hidden])').filter(function (i) { return i.offsetParent !== null && !i.value; })[0];
       if (first) setTimeout(function () { try { first.focus(); } catch (e) {} }, 60);
@@ -1805,6 +1872,7 @@ var Auth = (function () {
     if (text) msg('au-m-login', text, type || 'info');
   }
   function closeLogin() {
+    if (S.gate && !S.user) { el('au-l-pass').value = ''; step('emp'); return; }   // ยังไม่ผ่านด่านรหัสพนักงาน → กลับไปหน้ากรอกรหัส
     el('au-login').hidden = true;
     document.body.classList.remove('au-view-login');
     el('au-l-pass').value = '';
@@ -1821,6 +1889,32 @@ var Auth = (function () {
       el('au-l-pass').value = '';
       if (r.mustChangePw) { S.tempPw = p; S.pendingUser = r.user; gotoForce(); } else { S.user = r.user; enter(); }
     }).catch(function (e) { msg('au-m-login', errText(e)); }).then(function () { busy(btn, false); });
+  }
+
+  /** Dashboard แจ้งว่าต้องผ่านด่านรหัสพนักงานก่อน (ผู้เยี่ยมชม) */
+  function needEmp(sessionExpired) {
+    var had = !!empPass();
+    empStore(null);
+    if (S.user || S.token) resetUI();
+    S.gate = true;
+    loadAdminContacts();
+    step('emp');
+    if (sessionExpired) msg('au-m-emp', 'Session หมดอายุแล้ว — กรอกรหัสพนักงาน หรือเข้าสู่ระบบใหม่', 'info');
+    else if (had) msg('au-m-emp', 'การยืนยันรหัสพนักงานหมดอายุแล้ว กรุณากรอกใหม่อีกครั้ง', 'info');
+  }
+  function onEmp(e) {
+    e.preventDefault();
+    var id = val('au-e-id'), btn = e.target.querySelector('[type=submit]');
+    if (!id) return msg('au-m-emp', 'กรุณากรอกรหัสพนักงาน');
+    msg('au-m-emp'); busy(btn, true);
+    call('empVerify', id, clientInfo()).then(function (r) {
+      if (!r || !r.ok) { msg('au-m-emp', (r && r.msg) || 'ตรวจสอบรหัสพนักงานไม่สำเร็จ'); el('au-e-id').select(); return; }
+      empStore(r.pass || '');
+      S.gate = false; el('au-e-id').value = '';
+      closeLogin();
+      if (r.name) toast('ยินดีต้อนรับ คุณ' + r.name);
+      if (typeof startLoadData === 'function') startLoadData();
+    }).catch(function (er) { msg('au-m-emp', errText(er)); }).then(function () { busy(btn, false); });
   }
 
   function gotoForce() {
@@ -1878,7 +1972,10 @@ var Auth = (function () {
   /* ---------- เข้าสู่ / ออกจากระบบ ---------- */
   function enter() {
     S.pendingUser = null;
+    var mustLoad = S.gate || !window.globalData;
+    S.gate = false;
     closeLogin();
+    if (mustLoad && typeof startLoadData === 'function') startLoadData();
     document.body.classList.add('au-authed');
     renderUserMenus();
     applyPerms();
@@ -1905,7 +2002,7 @@ var Auth = (function () {
     if (t) call('authLogout', t, reason || '').catch(function () {});
     resetUI();
     closeLogin();
-    toast(reason === 'timeout' ? 'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน ' + IDLE_MIN + ' นาที' : 'ออกจากระบบเรียบร้อยแล้ว');
+    toast(reason === 'timeout' ? 'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน ' + (IDLE_MIN % 60 ? IDLE_MIN + ' นาที' : IDLE_MIN / 60 + ' ชั่วโมง') : 'ออกจากระบบเรียบร้อยแล้ว');
   }
 
   function expired(text) {
@@ -2065,6 +2162,7 @@ var Auth = (function () {
     users: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
     log: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>',
     db: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+    spec: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/>',
     dash: '<rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/>'
   };
   var SM_C = { view: ['#2B5C8A', '#E6EDF5'], tool: ['#0E8C99', '#E0F3F4'], link: ['#C98200', '#FBF0DB'], auth: ['#6B4FBB', '#EEEAF8'], rec: ['#2E8B57', '#E3F3EA'], admin: ['#B5475A', '#F8E7EA'] };
@@ -2090,6 +2188,7 @@ var Auth = (function () {
       { t: 'รายโครงการ', i: 'proj', leaf: 'รายการกิจกรรม แต่ละโครงการ' }];
     var admins = [
       { t: 'ผู้ใช้งานและสิทธิ์', i: 'users', items: ['เพิ่มผู้ใช้', 'นำเข้าผู้ใช้งานทั่วไป', 'แก้ไข', 'ลบทิ้ง', 'รีเซ็ตรหัสผ่าน'] },
+      { t: 'ข้อมูลพนักงาน', i: 'users', items: ['นำเข้าข้อมูลพนักงาน (Excel)', 'เพิ่ม / แก้ไข / ลบ', 'ส่งออก Excel', 'เปิด/ปิดด่านรหัสพนักงาน'] },
       { t: 'Log การใช้งาน', i: 'log', items: ['ค้นหา (Search)', 'ส่งออก CSV', 'ส่งออก Excel', 'ล้าง Log'] },
       { t: 'จัดการข้อมูล', i: 'db', items: ['ดาวน์โหลดสำรอง', 'ล้างข้อมูล', 'สำรองทีละชีต', 'อัปโหลดไฟล์ใหม่ทีละชีต'] },
       { t: 'ตั้งค่าการคำนวณ', i: 'calc', items: ['เลือกแผนงานที่ไม่รวมคำนวณ', 'ดูผลเทียบก่อนบันทึก', 'บันทึกการตั้งค่า'] },
@@ -2105,7 +2204,8 @@ var Auth = (function () {
     h += '<li' + smSt('link') + '>' + smBox({ t: 'ลิงก์ระบบอื่น', i: 'link' }, 'link', 'g1') + '<div class="smx-stack"' + smSt('link') + '>' +
       smLinks().map(function (x, i) { return smBox({ t: x.title + (x.show === 'auth' ? ' (เมื่อเข้าสู่ระบบ)' : ''), n: String(i + 2) }, 'link', 'sm'); }).join('') + '</div></li>';
     h += '<li' + smSt('auth') + '>' + smBox({ t: 'เข้าสู่ระบบ (Login)', i: 'login' }, 'auth', 'g1') + '<ul>' +
-      '<li' + smSt('auth') + '><div class="smx-stack nol">' + smBox({ t: 'ลืมรหัสผ่าน (OTP)', i: 'key' }, 'auth', 'sm') + smBox({ t: 'เปลี่ยนรหัสผ่าน', i: 'lock' }, 'auth', 'sm') + smBox({ t: 'Site Map', i: 'map' }, 'auth', 'sm') + smBox({ t: 'คู่มือการใช้งานระบบ', i: 'book' }, 'auth', 'sm') + '</div></li>' +
+      '<li' + smSt('auth') + '><div class="smx-stack nol">' + smBox({ t: 'ลืมรหัสผ่าน (OTP)', i: 'key' }, 'auth', 'sm') + smBox({ t: 'เปลี่ยนรหัสผ่าน', i: 'lock' }, 'auth', 'sm') + smBox({ t: 'Site Map', i: 'map' }, 'auth', 'sm') + smBox({ t: 'คู่มือการใช้งานระบบ', i: 'book' }, 'auth', 'sm') +
+        (isSuper() ? smBox({ t: 'Spec ระบบ (ผู้ดูแล)', i: 'spec' }, 'auth', 'sm only') : '') + '</div></li>' +
       '<li' + smSt('rec') + '>' + smBox({ t: 'บันทึกข้อมูล', i: 'pen' }, 'rec') + '<div class="smx-stack"' + smSt('rec') + '>' +
         smBox({ t: 'ยืนยันความถูกต้องของข้อมูล', i: 'seal' }, 'rec', 'sm') + smBox({ t: 'ยกเลิกการยืนยัน (ระบุเหตุผล)', i: 'seal' }, 'rec', 'sm') +
         smBox({ t: 'บันทึก %ดำเนินงาน (ระดับกิจกรรม)', i: 'pen' }, 'rec', 'sm') + '</div></li>' +
@@ -2113,7 +2213,7 @@ var Auth = (function () {
       '</ul></li>';
     h += '</ul></li></ul>';
     el('au-sm-canvas').innerHTML = h;
-    SM.built = true;
+    SM.built = true; SM.spec = isSuper();
   }
   function fitSitemap() {
     var body = el('au-sm-body'), fit = el('au-sm-fit'), cv = el('au-sm-canvas');
@@ -2635,6 +2735,181 @@ var Auth = (function () {
     });
   }
 
+  /* ---------- Admin: ข้อมูลพนักงาน สช. (นำเข้า / จัดการ) + ด่านรหัสพนักงานของผู้เยี่ยมชม ---------- */
+  var EMPD = { headers: [], rows: [], idCol: -1, meta: {}, gate: true, page: 1, imp: null };
+  function loadEmp() {
+    el('au-e-body').innerHTML = '<tr><td class="au-empty"><span class="au-spin"></span> กำลังโหลดข้อมูลพนักงาน...</td></tr>';
+    call('adminEmpList', S.token).then(function (r) {
+      if (!r.ok) { el('au-e-body').innerHTML = '<tr><td class="au-empty">' + esc(r.msg) + '</td></tr>'; return; }
+      EMPD.headers = r.headers || []; EMPD.rows = r.rows || []; EMPD.idCol = r.idCol; EMPD.meta = r.meta || {}; EMPD.gate = r.gate !== false;
+      renderEmp();
+    }).catch(fail);
+  }
+  function renderEmp() {
+    var H = EMPD.headers, all = EMPD.rows, q = val('au-e-q').toLowerCase(), m = EMPD.meta, on = EMPD.gate && all.length > 0;
+    el('au-e-gate').checked = EMPD.gate;
+    el('au-e-stats').innerHTML =
+      '<div class="au-stat"><span>พนักงานในระบบ</span><b>' + all.length.toLocaleString('th-TH') + '</b></div>' +
+      '<div class="au-stat"><span>จำนวนฟิลด์ (คอลัมน์)</span><b>' + H.length + '</b></div>' +
+      '<div class="au-stat' + (on ? ' good' : ' bad') + '"><span>ด่านรหัสพนักงาน (ผู้เยี่ยมชม)</span><b style="font-size:20px">' + (on ? 'ทำงานอยู่' : (EMPD.gate ? 'ยังไม่มีข้อมูล' : 'ปิดอยู่')) + '</b></div>' +
+      '<div class="au-stat"><span>นำเข้าล่าสุด</span><b style="font-size:15px;line-height:1.4">' + (m.at ? esc(fmtTs(m.at)) + '<br><span class="au-hint">' + esc((m.by || '') + (m.file ? ' · ' + m.file : '')) + '</span>' : '-') + '</b></div>';
+    el('au-e-head').innerHTML = H.length ? '<tr>' + H.map(function (h, i) { return '<th' + (i === EMPD.idCol ? ' class="au-e-idh"' : '') + '>' + esc(h) + '</th>'; }).join('') + '<th style="text-align:right">จัดการ</th></tr>' : '';
+    var list = all.map(function (r, i) { return { r: r, i: i }; }).filter(function (x) { return !q || x.r.join(' ').toLowerCase().indexOf(q) !== -1; });
+    el('au-e-count').textContent = H.length ? 'พบ ' + list.length.toLocaleString('th-TH') + ' จาก ' + all.length.toLocaleString('th-TH') + ' รายการ' : 'ยังไม่มีข้อมูลพนักงาน — กด "นำเข้าข้อมูลพนักงาน" เพื่อเริ่มต้น';
+    el('au-e-del-all').hidden = el('au-e-export').hidden = el('au-e-add').hidden = !all.length;
+    var SIZE = 20, pages = Math.max(1, Math.ceil(list.length / SIZE));
+    EMPD.page = Math.min(Math.max(1, EMPD.page || 1), pages);
+    el('au-e-pager').innerHTML = list.length ? pagerHTML(EMPD.page, pages, list.length, SIZE, 'emp-page') : '';
+    if (!H.length) { el('au-e-body').innerHTML = '<tr><td class="au-empty">ยังไม่มีข้อมูลพนักงาน</td></tr>'; return; }
+    if (!list.length) { el('au-e-body').innerHTML = '<tr><td colspan="' + (H.length + 1) + '" class="au-empty">ไม่พบรายการตามคำค้น</td></tr>'; return; }
+    var st = (EMPD.page - 1) * SIZE;
+    el('au-e-body').innerHTML = list.slice(st, st + SIZE).map(function (x) {
+      var id = x.r[EMPD.idCol] || '';
+      return '<tr>' + H.map(function (h, c) { return '<td data-l="' + esc(h) + '"' + (c === EMPD.idCol ? ' class="mono"' : '') + '>' + (c === EMPD.idCol ? '<b>' + esc(x.r[c] || '') + '</b>' : esc(x.r[c] || '')) + '</td>'; }).join('') +
+        '<td class="au-c-acts"><div class="au-acts"><button class="au-ib" type="button" data-act="emp-edit" data-i="' + x.i + '" title="แก้ไข" aria-label="แก้ไข">' + IC.edit + '</button>' +
+        '<button class="au-ib del" type="button" data-act="emp-del" data-id="' + esc(id) + '" title="ลบ" aria-label="ลบ">' + IC.del + '</button></div></td></tr>';
+    }).join('');
+  }
+  function empForm(idx) {
+    var H = EMPD.headers, r = idx == null ? H.map(function () { return ''; }) : EMPD.rows[idx], orig = idx == null ? '' : (r[EMPD.idCol] || '');
+    modal({
+      title: idx == null ? 'เพิ่มพนักงาน' : 'แก้ไขข้อมูลพนักงาน', submit: 'บันทึก', wide: H.length > 6,
+      body: '<div class="au-grid2">' + H.map(function (h, c) {
+        return '<div class="au-fld"><label for="au-ef-' + c + '">' + esc(h) + (c === EMPD.idCol ? ' <span style="color:var(--bad)">*</span>' : '') + '</label>' +
+          '<input class="au-in" id="au-ef-' + c + '" value="' + esc(r[c] || '') + '"' + (c === EMPD.idCol ? ' required maxlength="40"' : ' maxlength="300"') + '></div>';
+      }).join('') + '</div>',
+      onSubmit: function (btn) {
+        var v = H.map(function (h, c) { return val('au-ef-' + c); });
+        if (!v[EMPD.idCol]) return mmsg('กรุณากรอก' + H[EMPD.idCol]);
+        busy(btn, true);
+        call('adminEmpSave', S.token, orig, v).then(function (x) {
+          if (!x.ok) return mmsg(x.msg);
+          closeModal(); toast(x.msg); loadEmp();
+        }).catch(function (e) { if (!e || !e.handled) mmsg(errText(e)); }).then(function () { busy(btn, false); });
+      }
+    });
+  }
+  function empDelete(id, all) {
+    modal({
+      title: all ? 'ลบข้อมูลพนักงานทั้งหมด' : 'ลบข้อมูลพนักงาน', submit: all ? 'ลบทั้งหมด' : 'ลบ', danger: true,
+      body: all ? '<p style="margin:0">ต้องการลบข้อมูลพนักงานทั้งหมด <b>' + EMPD.rows.length.toLocaleString('th-TH') + ' รายการ</b> ใช่หรือไม่?</p>' +
+          '<p class="au-hint">เมื่อไม่มีข้อมูลพนักงาน ด่านกรอกรหัสพนักงานจะหยุดทำงาน — ผู้เยี่ยมชมเข้าดู Dashboard ได้โดยไม่ต้องกรอกรหัส</p>'
+        : '<p style="margin:0">ต้องการลบพนักงานรหัส <b>' + esc(id) + '</b> ใช่หรือไม่?</p>',
+      onSubmit: function (btn) {
+        busy(btn, true);
+        call('adminEmpDelete', S.token, all ? [] : [id], !!all).then(function (x) {
+          if (!x.ok) return mmsg(x.msg);
+          closeModal(); toast(x.msg); loadEmp();
+        }).catch(function (e) { if (!e || !e.handled) mmsg(errText(e)); }).then(function () { busy(btn, false); });
+      }
+    });
+  }
+  function empPick() {
+    var inp = el('au-e-file'); inp.value = '';
+    inp.onchange = function () { if (inp.files && inp.files[0]) empRead(inp.files[0]); };
+    inp.click();
+  }
+  /** หัวคอลัมน์ที่เป็น "รหัสพนักงาน" (ต้องตรงกับ empIdCol_ ใน Auth.gs) */
+  function empIdIdx(head) {
+    for (var i = 0; i < head.length; i++) {
+      var t = String(head[i] == null ? '' : head[i]).replace(/[\s_.\-]+/g, '').toLowerCase();
+      if (/^(รหัสพนักงาน|รหัสบุคลากร|รหัสเจ้าหน้าที่|เลขประจำตัวพนักงาน|employeeid|employeeno|empid|empno|staffid|staffno)$/.test(t) || t.indexOf('รหัสพนักงาน') === 0) return i;
+    }
+    return -1;
+  }
+  function empRead(file) {
+    if (file.size > 10 * 1024 * 1024) return toast('ไฟล์มีขนาดใหญ่เกิน 10 MB', true);
+    Busy.start('กำลังอ่านไฟล์ ' + file.name + '...');
+    loadSheetJS().then(function () {
+      return new Promise(function (ok, no) { var fr = new FileReader(); fr.onload = function () { ok(fr.result); }; fr.onerror = function () { no(new Error('อ่านไฟล์ไม่สำเร็จ')); }; fr.readAsArrayBuffer(file); });
+    }).then(function (buf) {
+      var isCsv = /\.csv$/i.test(file.name);
+      var wb = isCsv ? XLSX.read(new TextDecoder('utf-8').decode(buf), { type: 'string', raw: false }) : XLSX.read(new Uint8Array(buf), { type: 'array' });
+      var found = null;
+      wb.SheetNames.some(function (sn) {
+        var rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: '' });
+        for (var r = 0; r < Math.min(15, rows.length); r++) { var ix = empIdIdx(rows[r]); if (ix >= 0) { found = { sheet: sn, rows: rows, head: r, idc: ix }; return true; } }
+        return false;
+      });
+      Busy.end();
+      if (!found) return toast('ไม่พบหัวคอลัมน์ "รหัสพนักงาน" ในไฟล์ (ตรวจใน 15 แถวแรกของทุกแผ่นงาน)', true);
+      var head = found.rows[found.head].map(function (h) { return String(h == null ? '' : h).replace(/\s+/g, ' ').trim(); });
+      // ตัดคอลัมน์ท้ายที่ไม่มีหัวและไม่มีข้อมูล / ตั้งชื่อให้คอลัมน์ที่ไม่มีหัวแต่มีข้อมูล
+      var body = found.rows.slice(found.head + 1);
+      var used = head.map(function (h, c) { return !!h || body.some(function (r) { return String(r[c] == null ? '' : r[c]).trim() !== ''; }); });
+      var cols = []; head.forEach(function (h, c) { if (used[c]) cols.push(c); });
+      var seenH = {};
+      var H = cols.map(function (c, k) { var h = head[c] || ('คอลัมน์ ' + (k + 1)); if (seenH[h]) h += ' (' + (++seenH[h]) + ')'; else seenH[h] = 1; return h; });
+      var idc = cols.indexOf(found.idc), seen = {}, ok = 0, dup = 0, noId = 0;
+      var R = [];
+      body.forEach(function (r) {
+        var v = cols.map(function (c) { return String(r[c] == null ? '' : r[c]).trim(); });
+        if (!v.some(function (x) { return x !== ''; })) return;
+        var id = v[idc].replace(/\s+/g, '').toUpperCase(), st = '';
+        if (!id) { st = 'ไม่มีรหัสพนักงาน'; noId++; } else if (seen[id]) { st = 'รหัสซ้ำกับแถวก่อนหน้า'; dup++; } else { seen[id] = 1; ok++; }
+        R.push({ v: v, err: st });
+      });
+      if (!R.length) return toast('ไม่พบรายการข้อมูลพนักงานในไฟล์', true);
+      EMPD.imp = { file: file.name, sheet: found.sheet, headers: H, idc: idc, rows: R };
+      empPreview(ok, dup, noId);
+    }).catch(function (e) { Busy.end(); toast('อ่านไฟล์ไม่สำเร็จ: ' + errText(e) + ' (รองรับ .xlsx, .xls และ .csv)', true); });
+  }
+  function empPreview(ok, dup, noId) {
+    var I = EMPD.imp, show = I.rows.slice(0, 200), has = EMPD.rows.length > 0;
+    var th = '<tr><th>ผลตรวจ</th>' + I.headers.map(function (h, c) { return '<th' + (c === I.idc ? ' class="au-e-idh"' : '') + '>' + esc(h) + '</th>'; }).join('') + '</tr>';
+    var tr = show.map(function (o) {
+      return '<tr' + (o.err ? ' class="bad"' : '') + '><td>' + (o.err ? '<span class="au-badge bad">✕ ' + esc(o.err) + '</span>' : '<span class="au-badge ok">✓</span>') + '</td>' +
+        o.v.map(function (x, c) { return '<td' + (c === I.idc ? ' class="mono"' : '') + '>' + esc(x) + '</td>'; }).join('') + '</tr>';
+    }).join('');
+    var rd = function (v, t, d, chk) { return '<label class="au-check"><input type="radio" name="au-ei-mode" value="' + v + '"' + (chk ? ' checked' : '') + '><span>' + t + '<small>' + d + '</small></span></label>'; };
+    modal({
+      title: 'นำเข้าข้อมูลพนักงาน สช.', wide: true, submit: ok ? 'นำเข้า ' + ok.toLocaleString('th-TH') + ' รายการ' : '',
+      body: '<div class="au-sec"><span class="au-hint">ไฟล์ ' + esc(I.file) + ' · แผ่นงาน ' + esc(I.sheet) + ' · ' + I.headers.length + ' ฟิลด์ (เก็บทุกฟิลด์ตามไฟล์)</span>' +
+          '<b>พบ ' + I.rows.length.toLocaleString('th-TH') + ' รายการ — พร้อมนำเข้า ' + ok.toLocaleString('th-TH') + ' รายการ' +
+          (dup + noId ? ' · ข้าม ' + (dup + noId) + ' รายการ (' + [noId ? 'ไม่มีรหัส ' + noId : '', dup ? 'รหัสซ้ำ ' + dup : ''].filter(String).join(', ') + ')' : '') + '</b>' +
+          (I.rows.length > show.length ? '<span class="au-hint">แสดงตัวอย่าง ' + show.length + ' รายการแรก</span>' : '') + '</div>' +
+        '<div class="au-imp-tw"><table class="au-imp au-emp"><thead>' + th + '</thead><tbody>' + tr + '</tbody></table></div>' +
+        '<div class="au-sec"><h4>วิธีนำเข้า</h4>' +
+          rd('replace', 'แทนที่ข้อมูลเดิมทั้งหมด', 'ข้อมูลพนักงานในระบบจะเหลือเฉพาะรายการในไฟล์นี้ (ใช้เมื่อได้รายชื่อชุดใหม่ทั้งหมดจาก HR)', true) +
+          (has ? rd('merge', 'เพิ่ม / ปรับปรุงจากข้อมูลเดิม', 'รหัสที่มีอยู่แล้วจะถูกปรับปรุงตามไฟล์ รหัสใหม่จะถูกเพิ่ม รายการเดิมที่ไม่อยู่ในไฟล์ยังคงอยู่', false) : '') +
+        '</div>',
+      footNote: has ? 'ปัจจุบันมีข้อมูลพนักงาน ' + EMPD.rows.length.toLocaleString('th-TH') + ' รายการ' : 'เมื่อนำเข้าแล้ว ผู้เยี่ยมชมต้องกรอกรหัสพนักงานก่อนเข้าดู Dashboard',
+      onSubmit: function (btn) {
+        var mode = (document.querySelector('input[name="au-ei-mode"]:checked') || {}).value || 'replace';
+        var rows = I.rows.filter(function (o) { return !o.err; }).map(function (o) { return o.v; });
+        if (!rows.length) return mmsg('ไม่มีรายการที่พร้อมนำเข้า');
+        busy(btn, true);
+        call('adminEmpImport', S.token, I.headers, rows, mode, I.file).then(function (x) {
+          if (!x.ok) return mmsg(x.msg);
+          closeModal(); toast(x.msg); EMPD.imp = null; EMPD.page = 1; loadEmp();
+        }).catch(function (e) { if (!e || !e.handled) mmsg(errText(e)); }).then(function () { busy(btn, false); });
+      }
+    });
+  }
+  function empExport() {
+    loadSheetJS().then(function () {
+      var ws = XLSX.utils.aoa_to_sheet([EMPD.headers].concat(EMPD.rows));
+      ws['!cols'] = EMPD.headers.map(function (h) { return { wch: Math.max(12, String(h).length + 4) }; });
+      // คอลัมน์รหัสเป็นข้อความ (รักษาเลข 0 นำหน้า)
+      for (var r = 1; r <= EMPD.rows.length; r++) { var a = XLSX.utils.encode_cell({ r: r, c: EMPD.idCol }); if (ws[a]) { ws[a].t = 's'; ws[a].z = '@'; } }
+      var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'ข้อมูลพนักงาน');
+      var d = new Date();
+      var out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      a.download = 'ข้อมูลพนักงาน_' + (d.getFullYear() + 543) + pad(d.getMonth() + 1) + pad(d.getDate()) + '.xlsx';
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      toast('ส่งออกข้อมูลพนักงาน ' + EMPD.rows.length.toLocaleString('th-TH') + ' รายการแล้ว');
+      call('authLogAction', S.token, 'EMP_EXPORT', 'ส่งออกข้อมูลพนักงาน ' + EMPD.rows.length + ' รายการ (' + a.download + ')').catch(function () {});
+    }).catch(fail);
+  }
+  function empGate(on) {
+    call('adminEmpGate', S.token, on).then(function (x) {
+      if (!x.ok) { el('au-e-gate').checked = !on; return toast(x.msg, true); }
+      EMPD.gate = x.gate; toast(x.msg); renderEmp();
+    }).catch(function (e) { el('au-e-gate').checked = !on; fail(e); });
+  }
+
   function cellOut(v) { return v instanceof Date ? { d: v.getTime() } : (v == null ? '' : v); }
   function dataReadFile(file) {
     if (file.size > 30 * 1024 * 1024) return toast('ไฟล์มีขนาดใหญ่เกิน 30 MB', true);
@@ -2748,20 +3023,39 @@ var Auth = (function () {
       qa('.au-um-slot').forEach(function (s) {
         s.innerHTML = guest + '<button class="btn primary au-login-btn" type="button" data-act="login" aria-label="เข้าสู่ระบบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg><span class="au-lb-t">เข้าสู่ระบบ</span></button>';
       });
+      syncSpecMenus();
       return;
     }
     var admin = u.perms && u.perms.canBackoffice;
     var html = '<div class="au-um"><button class="au-um-btn" type="button" aria-haspopup="menu" aria-expanded="false" data-act="um">' +
       '<span class="au-av">' + initials(u.fullName) + '</span><span class="au-um-name">' + esc(u.fullName) + '</span>' +
       '<span class="au-role' + roleCls(u.role) + '">' + esc(u.role) + '</span></button>' +
-      '<div class="au-menu" role="menu"><div class="hd"><b>' + esc(u.fullName) + '</b><span>@' + esc(u.username) + (u.email ? ' · ' + esc(u.email) : '') + '</span>' +
+      '<div class="au-menu" role="menu"><div class="hd"><b>' + esc(u.fullName) + '</b><span style="display:block">@' + esc(u.username) + '</span>' + (u.email ? '<span style="display:block">' + esc(u.email) + '</span>' : '') +
       (u.department ? '<span style="display:block">' + esc(u.department) + '</span>' : '') + '</div>' +
       '<button type="button" role="menuitem" data-act="sitemap">' + IC.sitemap + 'Site Map</button>' +
       '<button type="button" role="menuitem" data-act="manual">' + IC.book + 'คู่มือการใช้งานระบบ</button>' +
+      (isSuper() ? '<button type="button" role="menuitem" data-act="spec">' + IC.spec + 'Spec ระบบ (ผู้ดูแล)</button>' : '') +
       (admin ? '<button type="button" role="menuitem" data-act="admin">' + IC.shield + 'ระบบจัดการหลังบ้าน</button>' : '') +
       '<button type="button" role="menuitem" data-act="pw">' + IC.key + 'เปลี่ยนรหัสผ่าน</button>' +
       '<button type="button" role="menuitem" data-act="out" class="out">' + IC.out + 'ออกจากระบบ</button></div></div>';
     qa('.au-um-slot').forEach(function (s) { s.innerHTML = html; });
+    syncSpecMenus();
+  }
+  /** เมนู Spec ระบบ: แสดงเฉพาะ Superadmin (เซิร์ฟเวอร์ตรวจสิทธิ์ซ้ำทุกครั้งใน api_specDoc) */
+  function isSuper() { return !!(S.user && S.user.perms && S.user.perms.isSuperadmin); }
+  function syncSpecMenus() {
+    var w = document.getElementById('side-help'); if (w) w.hidden = !isSuper();
+    if (SM.built && SM.spec !== isSuper()) SM.built = false;
+  }
+  function openSpecDoc() {
+    closeMenus();
+    if (!isSuper()) { toast('เมนูนี้สำหรับ Superadmin เท่านั้น', true); return; }
+    call('api_specDoc', S.token).then(function (r) {
+      if (!r || !r.ok) { toast((r && r.msg) || 'เปิดเอกสาร Spec ระบบไม่สำเร็จ', true); return; }
+      var d = null; try { d = JSON.parse(r.doc); } catch (e) {}
+      if (!d || !window.Manual || !Manual.openSpec) { toast('ไฟล์ SpecDoc ไม่ถูกต้อง', true); return; }
+      Manual.openSpec(d);
+    }).catch(fail);
   }
   function closeMenus() { qa('.au-um.open').forEach(function (m) { m.classList.remove('open'); var bt = m.querySelector('[data-act=um]'); if (bt) bt.setAttribute('aria-expanded', 'false'); }); }
 
@@ -2814,6 +3108,8 @@ var Auth = (function () {
     var tu = document.querySelector('.au-tabs [data-pane="users"]'), tl = document.querySelector('.au-tabs [data-pane="logs"]');
     if (tu) tu.hidden = !myPerm('canManageUsers');
     if (tl) tl.hidden = !myPerm('canViewLogs');
+    var te = document.querySelector('.au-tabs [data-pane="emp"]');
+    if (te) te.hidden = !myPerm('canManageUsers');
     var td = document.querySelector('.au-tabs [data-pane="data"]');
     if (td) td.hidden = !myPerm('canManageData');
     var tc = document.querySelector('.au-tabs [data-pane="calc"]');
@@ -2832,6 +3128,7 @@ var Auth = (function () {
     if (want === 'users' && !myPerm('canManageUsers')) want = 'logs';
     if (want === 'logs' && !myPerm('canViewLogs')) want = myPerm('canManageUsers') ? 'users' : 'data';
     if (want === 'data' && !myPerm('canManageData')) want = myPerm('canManageUsers') ? 'users' : 'logs';
+    if (want === 'emp' && !myPerm('canManageUsers')) want = 'logs';
     if (want === 'calc' && !myPerm('canEditCalc')) want = myPerm('canManageUsers') ? 'users' : 'logs';
     if ((want === 'links' || want === 'sys') && !myPerm('isSuperadmin')) want = myPerm('canManageUsers') ? 'users' : 'logs';
     pane(want);
@@ -2845,7 +3142,7 @@ var Auth = (function () {
     el('au-admin').setAttribute('data-pane', name);
     qa('.au-tabs [data-pane]').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-pane') === name)); });
     qa('[data-pane-c]').forEach(function (c) { c.style.display = c.getAttribute('data-pane-c') === name ? 'flex' : 'none'; });
-    if (name === 'users') loadUsers(); else if (name === 'data') loadData(); else if (name === 'calc') loadCalc(); else if (name === 'links') loadLinks(); else loadLogs(1);
+    if (name === 'users') loadUsers(); else if (name === 'emp') loadEmp(); else if (name === 'data') loadData(); else if (name === 'calc') loadCalc(); else if (name === 'links') loadLinks(); else loadLogs(1);
   }
 
   /* ---------- Admin: ผู้ใช้ ---------- */
@@ -3258,6 +3555,7 @@ var Auth = (function () {
   /* ---------- Events ---------- */
   function bind() {
     el('au-f-login').addEventListener('submit', onLogin);
+    el('au-f-emp').addEventListener('submit', onEmp);
     el('au-f-forgot1').addEventListener('submit', onForgot1);
     el('au-f-forgot2').addEventListener('submit', onForgot2);
     el('au-f-force').addEventListener('submit', onForce);
@@ -3267,6 +3565,8 @@ var Auth = (function () {
     });
     el('au-l-filter').addEventListener('submit', function (e) { e.preventDefault(); loadLogs(1); });
     ['au-u-q', 'au-u-role', 'au-u-status'].forEach(function (id) { el(id).addEventListener('input', function () { S.userPage = 1; renderUsers(); }); });
+    el('au-e-q').addEventListener('input', function () { EMPD.page = 1; renderEmp(); });
+    el('au-e-gate').addEventListener('change', function (e) { empGate(e.target.checked); });
     qa('.au-eye').forEach(function (b) { b.innerHTML = IC.eye; });
 
     document.addEventListener('click', function (e) {
@@ -3314,6 +3614,7 @@ var Auth = (function () {
         case 'admin': openAdmin(); break;
         case 'sitemap': openSitemap(); break;
         case 'manual': closeMenus(); if (window.Manual) Manual.open(); break;
+        case 'spec': openSpecDoc(); break;
         case 'sm-close': closeSitemap(); break;
         case 'sm-zoom': SM.full = !SM.full; fitSitemap(); break;
         case 'sm-png': downloadSitemap(t); break;
@@ -3334,6 +3635,13 @@ var Auth = (function () {
         case 'unlock': unlock(un, t); break;
         case 'log-page': loadLogs(parseInt(t.getAttribute('data-p'), 10)); break;
         case 'user-page': S.userPage = parseInt(t.getAttribute('data-p'), 10); renderUsers(); break;
+        case 'emp-page': EMPD.page = parseInt(t.getAttribute('data-p'), 10); renderEmp(); break;
+        case 'emp-import': empPick(); break;
+        case 'emp-add': empForm(null); break;
+        case 'emp-edit': empForm(+t.getAttribute('data-i')); break;
+        case 'emp-del': empDelete(t.getAttribute('data-id'), false); break;
+        case 'emp-del-all': empDelete('', true); break;
+        case 'emp-export': empExport(); break;
         case 'purge-log': openPurge(); break;
         case 'data-backup': dataBackupSelected(); break;
         case 'calc-save': calcSave(); break;
@@ -3441,9 +3749,9 @@ var Auth = (function () {
   }
 
   return {
-    boot: boot, token: function () { return S.token; }, user: function () { return S.user; },
+    boot: boot, token: function () { return S.token; }, user: function () { return S.user; }, empPass: empPass, needEmp: needEmp,
     guard: guard, track: track, expired: expired, logout: logout, applyPerms: applyPerms,
-    setVerify: setVerify, renderVerify: renderVerify, toast: toast
+    setVerify: setVerify, renderVerify: renderVerify, toast: toast, openSpec: openSpecDoc
   };
 })();
 </script>
@@ -3509,6 +3817,8 @@ body.mn-open{overflow:hidden}
 .mn-fig figcaption{font-size:13px;color:#6B7684;margin-top:6px}
 .mn-fig img:not([src]){aspect-ratio:16/10}
 .mn-pdf-toc{display:none}
+.mn-doc code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;background:#F1F4F8;border-radius:4px;padding:0 4px;overflow-wrap:anywhere}
+.mn-doc .mn-fig.dia img{border:0;box-shadow:none;background:#fff}
 @media (max-width:860px){
   .mn-main{grid-template-columns:1fr}
   .mn-toc{display:none}
@@ -3576,7 +3886,7 @@ body.mn-open{overflow:hidden}
   <div class="mn-bar">
     <div><b id="mn-t">คู่มือการใช้งานระบบ</b><small>ระบบสรุปผลการใช้จ่ายงบประมาณ สช.</small></div>
     <div class="mn-act">
-      <button class="btn" type="button" id="mn-pdf" title="ดาวน์โหลดคู่มือเป็นไฟล์ PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>ดาวน์โหลด PDF</span></button>
+      <button class="btn" type="button" id="mn-pdf" title="ดาวน์โหลดเอกสารนี้เป็นไฟล์ PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>ดาวน์โหลด PDF</span></button>
       <button class="btn" type="button" id="mn-close">ปิด</button>
     </div>
   </div>
@@ -3601,10 +3911,19 @@ body.mn-open{overflow:hidden}
 <tr><td><b><span class="w">ผู้</span><wbr/><span class="w">เยี่ยมชม</span></b><br/><span class="nw">(ไม่เข้าสู่ระบบ)</span></td><td><span class="w">ดู</span> Dashboard <span class="nw">ทุกมุมมอง</span>, <span class="w">พิมพ์</span><wbr/><span class="w">ข้อมูล</span>, <span class="w">ส่งออก</span> Excel, Site Map <span class="w">และ</span><wbr/><span class="w">คู่มือ</span> (<span class="w">ปุ่ม</span> <span class="nw">ช่วยเหลือ</span>)</td></tr>
 <tr><td><b>User</b></td><td><span class="w">เหมือน</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">เยี่ยมชม</span> + <span class="nw">เปลี่ยนรหัสผ่าน</span> <span class="w">และ</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">เพิ่มเติม</span><wbr/><span class="w">ที่</span><wbr/><span class="w">ได้รับ</span><wbr/><span class="w">เป็นราย</span><wbr/><span class="w">คน</span> <span class="w">เช่น</span> <span class="nw">ดาวน์โหลดชุดข้อมูลต้นฉบับ</span>, <span class="nw">ยืนยันความถูกต้องของข้อมูล</span>, <span class="nw">บันทึกผลดำเนินงาน</span>, <span class="nw">จัดการผู้ใช้งาน</span>, <span class="nw">เรียกดู Log</span></td></tr>
 <tr><td><b>Admin</b></td><td><span class="w">ทุก</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ข้างต้น</span> + <span class="nw">ระบบจัดการหลังบ้าน</span> (<span class="nw">ผู้ใช้งานและสิทธิ์</span>, Log) — <span class="w">ยกเว้น</span><wbr/><span class="w">การ</span><wbr/><span class="w">ลบ</span> Log; <span class="w">เมนู</span> <b><span class="w">จัดการ</span><wbr/><span class="w">ข้อมูล</span></b> <span class="w">และ</span> <b><span class="w">ตั้งค่า</span><wbr/><span class="w">การคำนวณ</span></b> <span class="w">ใช้ได้</span><wbr/><span class="w">เฉพาะคน</span><wbr/><span class="w">ที่</span> Superadmin <span class="w">เปิด</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ให้</span> (<span class="w">แยกกัน</span><wbr/><span class="w">ราย</span><wbr/><span class="w">สิทธิ์</span>)</td></tr>
-<tr><td><b>Superadmin</b></td><td><span class="w">ทุก</span><wbr/><span class="w">สิทธิ์</span> <span class="w">รวมถึง</span><wbr/><span class="w">ลบ</span> Log, <span class="w">จัดการ</span><wbr/><span class="w">ข้อมูล</span>, <span class="w">ตั้งค่า</span><wbr/><span class="w">การคำนวณ</span> <span class="w">และ</span><span class="nw">จัดการบัญชี</span> Admin / Superadmin</td></tr>
+<tr><td><b>Superadmin</b></td><td><span class="w">ทุก</span><wbr/><span class="w">สิทธิ์</span> <span class="w">รวมถึง</span><wbr/><span class="w">ลบ</span> Log, <span class="w">จัดการ</span><wbr/><span class="w">ข้อมูล</span>, <span class="w">ตั้งค่า</span><wbr/><span class="w">การคำนวณ</span>, <span class="nw">Spec ระบบ</span> <span class="w">และ</span><span class="nw">จัดการบัญชี</span> Admin / Superadmin</td></tr>
 </table>
 <h3 id="mn-s0-2"><span class="no">0.2</span>ระบบที่เชื่อมโยงกัน</h3>
 <p><span class="w">ระบบ</span><wbr/><span class="w">นี้</span><wbr/><span class="w">คือ</span><wbr/><span class="w">หมายเลข</span> <span class="mn-num">1</span> <span class="w">ใน</span> Site Map <span class="w">และ</span><wbr/><span class="w">มี</span><wbr/><span class="w">ลิงก์</span><wbr/><span class="w">ไป</span><wbr/><span class="w">ยัง</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">อื่น</span><wbr/><span class="w">ตามที่</span><wbr/><span class="w">ตั้งค่า</span><wbr/><span class="w">ไว้</span> <span class="w">เริ่ม</span><wbr/><span class="w">จาก</span><wbr/><span class="w">หมายเลข</span> <span class="mn-num">2</span> (<span class="w">ค่า</span><wbr/><span class="w">เริ่มต้น</span> 7 <span class="w">ระบบ</span> <span class="w">ดู</span><wbr/><span class="w">หัวข้อ</span> 4)</p>
+<h3 id="mn-s0-3"><span class="no">0.3</span><span class="nw">กรอกรหัสพนักงานก่อนเข้าดู</span> Dashboard</h3>
+<p>ผู้เยี่ยมชมที่ไม่ได้เข้าสู่ระบบ ต้องกรอก <b>รหัสพนักงาน สช.</b> ก่อนเข้าดู Dashboard ระบบจะตรวจว่ารหัสตรงกับข้อมูลพนักงานในระบบ (หลังบ้าน › ข้อมูลพนักงาน)</p>
+<ol class="st">
+<li>เปิดหน้า Dashboard ระบบจะแสดงหน้าต่าง <b>ยืนยันรหัสพนักงาน</b></li>
+<li>กรอกรหัสพนักงาน แล้วกด <b>เข้าดู Dashboard</b> — ผ่านแล้วใช้ได้ <b>10 ชั่วโมง</b> บนเครื่อง/เบราว์เซอร์นั้น</li>
+<li>ผู้มีบัญชีผู้ใช้ กด <b>เข้าสู่ระบบ →</b> ในหน้าต่างเดียวกัน (ไม่ต้องกรอกรหัสพนักงาน)</li>
+</ol>
+<div class="mn-tip">หากไม่ทราบรหัสพนักงาน รบกวนสอบถามจาก HR</div>
+
 <h2 id="mn-s1"><span class="no">1</span><span class="ht">Dashboard · หน้าจอหลัก</span></h2>
 <figure class="mn-fig"><img alt="ภาพ 1 หน้าจอหลักของ Dashboard (มุมมองภาพรวมงบประมาณ)" data-mi="d_source"/><figcaption><span class="w">ภาพ</span> 1 <span class="w">หน้าจอ</span><wbr/><span class="w">หลัก</span><wbr/><span class="w">ของ</span> Dashboard (<span class="w">มุมมอง</span><wbr/><span class="w">ภาพรวม</span><wbr/><span class="w">งบประมาณ</span>)</figcaption></figure>
 <h3 id="mn-s1-1"><span class="no">1.1</span>ส่วนหัวของหน้าจอ</h3>
@@ -3624,7 +3943,7 @@ body.mn-open{overflow:hidden}
 <table>
 <tr><th class="c"><span class="w">สัญลักษณ์</span></th><th><span class="w">ความหมาย</span></th></tr>
 <tr><td class="c"><span class="mn-sw" style="background:#1E9E6A"></span></td><td><b><span class="nw">เป็นไปตามแผน</span></b> — <span class="nw">ร้อยละเบิกจ่าย</span><span class="w">เท่ากับ</span><wbr/><span class="w">หรือ</span><wbr/><span class="w">มากกว่า</span> %<wbr/><span class="w">แผน</span><wbr/><span class="w">ที่ตั้ง</span><wbr/><span class="w">ไว้</span></td></tr>
-<tr><td class="c"><span class="mn-sw" style="background:#C77700"></span></td><td><b><span class="nw">น้อยกว่าแผน</span></b> — <span class="nw">ร้อยละเบิกจ่าย</span><span class="w">ต่ำกว่า</span> %<wbr/><span class="w">แผน</span><wbr/><span class="w">ที่ตั้ง</span><wbr/><span class="w">ไว้</span></td></tr>
+<tr><td class="c"><span class="mn-sw" style="background:#D9465F"></span></td><td><b><span class="nw">น้อยกว่าแผน</span></b> — <span class="nw">ร้อยละเบิกจ่าย</span><span class="w">ต่ำกว่า</span> %<wbr/><span class="w">แผน</span><wbr/><span class="w">ที่ตั้ง</span><wbr/><span class="w">ไว้</span></td></tr>
 <tr><td class="c"><span class="mn-sw" style="background:#C98200;width:3px;height:14px"></span></td><td><b>%<wbr/><span class="w">แผน</span><wbr/><span class="w">ที่ตั้ง</span><wbr/><span class="w">ไว้</span></b> <span class="w">ของ</span><wbr/><span class="w">เดือน</span><wbr/><span class="w">ปัจจุบัน</span> (<span class="w">เส้น</span><wbr/><span class="w">ตั้ง</span><wbr/><span class="w">บน</span><wbr/><span class="w">แถบ</span>)</td></tr>
 <tr><td class="c"><span class="mn-st" style="background:#fff;border:2.5px solid #0E8C99"></span></td><td><b>%<wbr/><span class="w">ดำเนินงาน</span></b> (<span class="w">แสดง</span><wbr/><span class="w">ใน</span><wbr/><span class="w">มุมมอง</span><wbr/><span class="w">ราย</span><wbr/><span class="w">แผนงาน</span><wbr/><span class="w">และ</span><wbr/><span class="w">ราย</span><wbr/><span class="w">โครงการ</span>)</td></tr>
 <tr><td class="c"><span class="mn-st" style="background:#2E9E3A"></span></td><td><b><span class="w">ตรา</span><wbr/><span class="w">ยืนยัน</span><wbr/><span class="w">สี</span><wbr/><span class="w">เขียว</span></b> — <span class="w">ข้อมูล</span><wbr/><span class="w">ส่วน</span><wbr/><span class="w">นั้น</span><wbr/><span class="w">ได้รับ</span><wbr/><span class="w">การ</span><wbr/><span class="w">ยืนยัน</span><wbr/><span class="w">ความถูกต้อง</span><wbr/><span class="w">แล้ว</span> (<span class="w">ชี้</span><wbr/><span class="w">เมาส์</span><wbr/><span class="w">เพื่อ</span><wbr/><span class="w">ดู</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">ยืนยัน</span><wbr/><span class="w">และ</span><wbr/><span class="w">เวลา</span>)</td></tr>
@@ -3688,7 +4007,7 @@ body.mn-open{overflow:hidden}
 </ol>
 <figure class="mn-fig"><img alt="ภาพ 10 หน้าเข้าสู่ระบบ" data-mi="a_login"/><figcaption><span class="w">ภาพ</span> 10 <span class="w">หน้า</span><wbr/><span class="w">เข้าสู่ระบบ</span></figcaption></figure>
 <figure class="mn-fig sm"><img alt="ภาพ 11 เมนูผู้ใช้" data-mi="a_menu"/><figcaption><span class="w">ภาพ</span> 11 <span class="w">เมนู</span><wbr/><span class="w">ผู้ใช้</span> <span class="w">เมื่อ</span><wbr/><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span><wbr/><span class="w">มุม</span><wbr/><span class="w">ขวา</span><wbr/><span class="w">บน</span></figcaption></figure>
-<div class="mn-warn"><span class="w">ใส่</span><wbr/><span class="w">รหัสผ่าน</span><wbr/><span class="w">ผิด</span><wbr/><span class="w">เกิน</span> <b><span class="nw">5 ครั้ง</span></b> <span class="w">บัญชี</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ถูก</span><wbr/><span class="w">ล็อก</span><wbr/><span class="w">ชั่วคราว</span> <b><span class="nw">15 นาที</span></b> · <span class="w">หาก</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ได้</span><wbr/><span class="w">ใช้งาน</span><wbr/><span class="w">นาน</span> <b><span class="nw">60 นาที</span></b> <span class="w">ระบบ</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ออกจากระบบ</span><wbr/><span class="w">ให้</span><wbr/><span class="w">อัตโนมัติ</span></div>
+<div class="mn-warn"><span class="w">ใส่</span><wbr/><span class="w">รหัสผ่าน</span><wbr/><span class="w">ผิด</span><wbr/><span class="w">ครบ</span> <b><span class="nw">5 ครั้ง</span></b> <span class="w">บัญชี</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ถูก</span><wbr/><span class="w">ล็อก</span><wbr/><span class="w">ชั่วคราว</span> <b><span class="nw">15 นาที</span></b> · <span class="w">หาก</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ได้</span><wbr/><span class="w">ใช้งาน</span><wbr/><span class="w">นาน</span> <b>10 ชั่วโมง</b> <span class="w">ระบบ</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ออกจากระบบ</span><wbr/><span class="w">ให้</span><wbr/><span class="w">อัตโนมัติ</span></div>
 <h3 id="mn-s5-2"><span class="no">5.2</span>ลืมรหัสผ่าน (OTP)</h3>
 <ol class="st">
 <li><span class="w">ที่</span><wbr/><span class="w">หน้า</span><wbr/><span class="w">เข้าสู่ระบบ</span> <span class="w">กด</span> <span class="mn-ui">ลืมรหัสผ่าน?</span></li>
@@ -3739,6 +4058,9 @@ body.mn-open{overflow:hidden}
 <div class="mn-note"><span class="w">ระบบ</span><wbr/><span class="w">คำนวณ</span><wbr/><span class="w">ระดับ</span><wbr/><span class="w">โครงการ</span><wbr/><span class="w">และ</span><wbr/><span class="w">แผนงาน</span><wbr/><span class="w">ให้</span><wbr/><span class="w">อัตโนมัติ</span><wbr/><span class="w">ทุกครั้งที่</span><wbr/><span class="w">บันทึก</span> <span class="w">แล้ว</span><wbr/><span class="w">โหลด</span> Dashboard <span class="w">ใหม่</span><wbr/><span class="w">ทันที</span> — <span class="w">ค่า</span> <span class="nw">%ดำเนินงาน</span><span class="w">ของ</span><wbr/><span class="w">กิจกรรม</span><wbr/><span class="w">ที่</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">ผ่าน</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">จะ</span><wbr/><span class="w">มี</span><b><span class="w">เส้นประ</span><wbr/><span class="w">ใต้</span><wbr/><span class="w">ตัวเลข</span></b> <span class="w">เมื่อ</span><wbr/><span class="w">ชี้</span><wbr/><span class="w">เมาส์</span> (<span class="w">หรือ</span><wbr/><span class="w">แตะ</span><wbr/><span class="w">บน</span><wbr/><span class="w">มือถือ</span>) <span class="w">จะ</span><wbr/><span class="w">แสดง</span> <b>"<span class="w">บันทึก</span><wbr/><span class="w">โดย</span> <span class="w">ชื่อ</span><wbr/><span class="w">ผู้บันทึก</span>"</b> <span class="w">พร้อม</span><wbr/><span class="w">วัน</span><wbr/><span class="w">เวลา</span><wbr/><span class="w">ที่</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">ล่าสุด</span> <span class="w">และ</span><wbr/><span class="w">ทุก</span><wbr/><span class="w">การ</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">จะ</span><wbr/><span class="w">ถูก</span><wbr/><span class="w">เก็บ</span><wbr/><span class="w">ใน</span> Log (<span class="w">กิจกรรม</span> "<span class="w">บันทึก</span> %<wbr/><span class="w">ดำเนินงาน</span>") <span class="w">และ</span><wbr/><span class="w">ใน</span><wbr/><span class="w">ชีต</span><wbr/><span class="w">ระบบ</span> SYS<wbr/>_Perf</div>
 <h3 id="mn-s5-7"><span class="no">5.7</span>คู่มือการใช้งานระบบ</h3>
 <p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui">คู่มือการใช้งานระบบ</span> (<span class="w">ถ้า</span><wbr/><span class="w">ยัง</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">เข้าสู่ระบบ</span> <span class="w">ใช้</span><wbr/><span class="w">ปุ่ม</span> <span class="mn-ui">ช่วยเหลือ</span> › <span class="mn-ui">คู่มือการใช้งานระบบ</span>) <span class="w">เพื่อ</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">คู่มือ</span><wbr/><span class="w">นี้</span> — <span class="w">กด</span> <span class="mn-ui">ดาวน์โหลด PDF</span> <span class="w">แล้ว</span><wbr/><span class="w">เลือก</span><wbr/><span class="w">ปลายทาง</span> <b><span class="nw">บันทึกเป็น PDF</span></b></p>
+<h3 id="mn-s5-8"><span class="no">5.8</span>Spec ระบบ (เฉพาะ Superadmin)</h3>
+<p><span class="w">เอกสาร</span><wbr/><span class="w">อธิบาย</span><wbr/><span class="w">การทำงาน</span><wbr/><span class="w">ของ</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">สำหรับ</span><wbr/><span class="w">ผู้ดูแล</span> (<span class="w">สิทธิ์</span> <span class="w">โครงสร้าง</span><wbr/><span class="w">ข้อมูล</span> <span class="w">ฟังก์ชัน</span><wbr/><span class="w">เซิร์ฟเวอร์</span> <span class="w">การ</span><wbr/><span class="w">ติดตั้ง</span>) — <span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui">Spec ระบบ (ผู้ดูแล)</span> <span class="w">หรือ</span><wbr/><span class="w">เมนู</span><wbr/><span class="w">ซ้าย</span> <span class="mn-ui">ช่วยเหลือ (ผู้ดูแล)</span> › <span class="mn-ui">Spec ระบบ</span> <span class="w">ใช้งาน</span><wbr/><span class="w">เหมือน</span><wbr/><span class="w">คู่มือ</span> <span class="w">มี</span><wbr/><span class="w">สารบัญ</span><wbr/><span class="w">และ</span><wbr/><span class="w">ปุ่ม</span> <span class="mn-ui">ดาวน์โหลด PDF</span></p>
+<div class="mn-note"><span class="w">เมนู</span><wbr/><span class="w">นี้</span><wbr/><span class="w">แสดง</span><wbr/><span class="w">เฉพาะ</span><wbr/><span class="w">บัญชี</span> <b>Superadmin</b> <span class="w">และ</span><wbr/><span class="w">เซิร์ฟเวอร์</span><wbr/><span class="w">ตรวจ</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ทุกครั้งที่</span><wbr/><span class="w">เปิด</span> <span class="w">บทบาท</span><wbr/><span class="w">อื่น</span><wbr/><span class="w">เปิด</span><wbr/><span class="w">ไม่</span><wbr/><span class="w">ได้</span></div>
 <h2 id="mn-s6"><span class="no">6</span><span class="ht"><span class="nw">ระบบจัดการหลังบ้าน</span></span></h2>
 <p><span class="w">คลิก</span><wbr/><span class="w">ชื่อ</span><wbr/><span class="w">ผู้ใช้</span> › <span class="mn-ui"><span class="nw">ระบบจัดการหลังบ้าน</span></span> (<span class="w">แสดง</span><wbr/><span class="w">เฉพาะ</span><wbr/><span class="w">ผู้</span><wbr/><span class="w">มีสิทธิ์</span>) — <span class="w">แท็บ</span><wbr/><span class="w">ที่</span><wbr/><span class="w">เห็น</span><wbr/><span class="w">ขึ้นกับ</span><wbr/><span class="w">สิทธิ์</span><wbr/><span class="w">ของ</span><wbr/><span class="w">แต่ละ</span><wbr/><span class="w">บัญชี</span> <span class="w">กด</span> <span class="mn-ui">กลับสู่ Dashboard</span> <span class="w">เพื่อ</span><wbr/><span class="w">ออกจาก</span><wbr/><span class="w">หลังบ้าน</span></p>
 <h3 id="mn-s6-1"><span class="no">6.1</span><span class="nw">ผู้ใช้งานและสิทธิ์</span></h3>
@@ -3838,6 +4160,15 @@ body.mn-open{overflow:hidden}
 </ol>
 <figure class="mn-fig"><img alt="ภาพ 25 แท็บค่าตั้งระบบ" data-mi="b_sys"/><figcaption><span class="w">ภาพ</span> 25 <span class="w">แท็บ</span><span class="nw">ค่าตั้งระบบ</span></figcaption></figure>
 <div class="mn-warn"><span class="w">ไฟล์</span><wbr/><span class="w">ค่า</span><wbr/><span class="w">ตั้ง</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">มี</span><b><span class="w">กุญแจ</span><wbr/><span class="w">เข้ารหัส</span><wbr/><span class="w">รหัสผ่าน</span></b> — <span class="w">เก็บ</span><wbr/><span class="w">ไว้</span><wbr/><span class="w">ใน</span><wbr/><span class="w">ที่</span><wbr/><span class="w">ปลอดภัย</span> <span class="w">ห้าม</span><wbr/><span class="w">ส่งต่อ</span> <span class="w">และ</span><wbr/><span class="w">ลบทิ้ง</span><wbr/><span class="w">เมื่อ</span><wbr/><span class="w">ย้าย</span><wbr/><span class="w">ระบบ</span><wbr/><span class="w">เสร็จ</span> · <span class="w">การส่งออก</span>/<span class="w">นำเข้า</span><wbr/><span class="w">ต้อง</span><wbr/><span class="w">ยืนยัน</span><wbr/><span class="w">รหัสผ่าน</span><wbr/><span class="w">ทุกครั้ง</span><wbr/><span class="w">และ</span><wbr/><span class="w">บันทึก</span><wbr/><span class="w">ลง</span> Log · <span class="w">หลัง</span><wbr/><span class="w">ย้าย</span><wbr/><span class="w">แล้ว</span><wbr/><span class="w">ต้อง</span> <b>Deploy <span class="w">เว็บ</span><wbr/><span class="w">แอ</span><wbr/>ป<wbr/><span class="w">ใหม่</span></b> (URL <span class="w">จะ</span><wbr/><span class="w">เปลี่ยน</span>) <span class="w">และ</span> Run <span class="nw"><code>setupAuthSystem</code></span> <span class="w">หนึ่ง</span><wbr/><span class="w">ครั้ง</span><wbr/><span class="w">เพื่อ</span><wbr/><span class="w">อนุญาต</span><wbr/><span class="w">การ</span><wbr/><span class="w">ส่ง</span><wbr/><span class="w">อีเมล</span> OTP</div>
+<h3 id="mn-s6-7"><span class="no">6.7</span><span class="nw">ข้อมูลพนักงาน</span></h3>
+<p>แท็บ <b>ข้อมูลพนักงาน</b> (ผู้มีสิทธิ์จัดการผู้ใช้งาน) ใช้เก็บรายชื่อพนักงาน สช. สำหรับตรวจรหัสพนักงานของผู้เยี่ยมชม (หัวข้อ 0.3)</p>
+<ul>
+<li><b>นำเข้าข้อมูลพนักงาน</b> — เลือกไฟล์ Excel (.xlsx / .xls) หรือ .csv ที่มีคอลัมน์ <b>"รหัสพนักงาน"</b> (หัวตารางอยู่ใน 15 แถวแรก) ระบบเก็บทุกฟิลด์ตามหัวคอลัมน์ในไฟล์ ตรวจแถวที่ไม่มีรหัส/รหัสซ้ำให้ก่อน แล้วเลือก <b>แทนที่ทั้งหมด</b> หรือ <b>เพิ่ม/ปรับปรุงจากข้อมูลเดิม</b></li>
+<li><b>เพิ่มพนักงาน / แก้ไข / ลบ</b> — จัดการทีละรายการจากตาราง · <b>ลบทั้งหมด</b> จะทำให้ด่านรหัสพนักงานหยุดทำงาน</li>
+<li><b>ส่งออก Excel</b> — ดาวน์โหลดข้อมูลพนักงานทั้งหมด</li>
+<li><b>ให้ผู้เยี่ยมชมกรอกรหัสพนักงานก่อนเข้าดู Dashboard</b> — เปิด/ปิดด่านรหัสพนักงาน (ทำงานเมื่อมีข้อมูลพนักงานอย่างน้อย 1 รายการ)</li>
+</ul>
+
 <h2 id="mn-s7"><span class="no">7</span><span class="ht">คำถามที่พบบ่อย</span></h2>
 <h3 id="mn-s7-1"><span class="no">7.1</span>ปัญหาและวิธีแก้</h3>
 <table>
@@ -3892,36 +4223,56 @@ body.mn-open{overflow:hidden}
     $m('mn-toc-sel').value = cur.id;
   }
   /** โหลดภาพประกอบครั้งแรกที่เปิดคู่มือ (เก็บแยกในไฟล์ ManualImg เพื่อไม่ให้ Dashboard โหลดช้า) */
-  var imgP = null;
+  var imgP = null, imgMap = null;
+  /** เอกสารที่แสดงในหน้าต่างนี้: 'manual' = คู่มือ, 'spec' = Spec ระบบ (เนื้อหาจากเซิร์ฟเวอร์ เฉพาะ Superadmin) */
+  var mode = 'manual', manualHtml = null, spec = null;
+  function applyImages() {
+    var map = {}, k;
+    if (imgMap) for (k in imgMap) map[k] = imgMap[k];
+    if (mode === 'spec' && spec && spec.imgs) for (k in spec.imgs) map[k] = spec.imgs[k];
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('#mn-doc img[data-mi]'));
+    return new Promise(function (ok) {
+      var left = imgs.length; if (!left) return ok();
+      imgs.forEach(function (im) {
+        var src = map[im.getAttribute('data-mi')];
+        if (!src || im.getAttribute('src') === src) { if (--left <= 0) ok(); return; }
+        im.onload = im.onerror = function () { if (--left <= 0) ok(); };
+        im.src = src;
+      });
+    });
+  }
   function loadImages() {
     if (imgP) return imgP;
     imgP = new Promise(function (ok) {
-      if (!(window.google && google.script && google.script.run)) return ok();
+      if (imgMap || !(window.google && google.script && google.script.run)) return applyImages().then(ok);
       google.script.run.withSuccessHandler(function (txt) {
         loadImages.n = 0;
-        var map = {}; try { map = JSON.parse(txt || '{}'); } catch (e) {}
-        var imgs = Array.prototype.slice.call(document.querySelectorAll('#mn-doc img[data-mi]'));
-        var left = imgs.length; if (!left) return ok();
-        imgs.forEach(function (im) {
-          var src = map[im.getAttribute('data-mi')];
-          if (!src) { if (--left <= 0) ok(); return; }
-          im.onload = im.onerror = function () { if (--left <= 0) ok(); };
-          im.src = src;
-        });
+        try { imgMap = JSON.parse(txt || '{}'); } catch (e) { imgMap = {}; }
+        applyImages().then(ok);
       }).withFailureHandler(function () {   // โหลดรูปไม่สำเร็จ (เครือข่าย/เซิร์ฟเวอร์ช้า) → ลองใหม่อัตโนมัติขณะคู่มือยังเปิดอยู่
-        imgP = null; ok();
+        imgP = null; applyImages().then(ok);
         if ((loadImages.n = (loadImages.n || 0) + 1) <= 5) setTimeout(function () { if (!$m('mn').hidden) loadImages(); }, 3000);
       }).getManualImages();
     });
     return imgP;
   }
-  function openManual() {
+  function setDoc(kind) {
+    if (manualHtml === null && mode === 'manual') manualHtml = $m('mn-doc').innerHTML;
+    $m('mn-doc').innerHTML = kind === 'spec' ? spec.html : manualHtml;
+    $m('mn-t').textContent = kind === 'spec' ? (spec.title || 'Spec ระบบ') : 'คู่มือการใช้งานระบบ';
+    $m('mn').classList.toggle('mn-spec', kind === 'spec');
+    mode = kind; built = false; imgP = null;
+  }
+  function show() {
     loadImages();
     buildToc();
     $m('mn').hidden = false; document.body.classList.add('mn-open');
     $m('mn-body').scrollTop = 0; spy();
     try { $m('mn-close').focus(); } catch (e) {}
   }
+  function openManual() { if (mode !== 'manual') setDoc('manual'); show(); }
+  /** เปิด Spec ระบบ: d = { title, file, version, html, imgs } จาก api_specDoc */
+  function openSpec(d) { spec = d; setDoc('spec'); show(); }
   function closeManual() { $m('mn').hidden = true; document.body.classList.remove('mn-open'); }
   /** ดาวน์โหลด PDF: ใช้หน้าต่างพิมพ์ของเบราว์เซอร์ (เลือก "บันทึกเป็น PDF") — ได้ไฟล์ข้อความคมชัด ค้นหาได้ และสารบัญคลิกได้ */
   function printManual() {
@@ -3976,7 +4327,7 @@ body.mn-open{overflow:hidden}
     Array.prototype.forEach.call(box.querySelectorAll('.mn-pdf-toc .pg'), function (sp) { var v = pg['p-' + sp.getAttribute('data-pg')]; sp.textContent = v ? String(v) : ''; });
     box.className = '';
     document.documentElement.classList.add('mn-printing');
-    var oldTitle = document.title; document.title = 'คู่มือการใช้งานระบบสรุปผลการใช้จ่ายงบประมาณ';
+    var oldTitle = document.title; document.title = mode === 'spec' ? (spec.file || 'Spec ระบบ') : 'คู่มือการใช้งานระบบสรุปผลการใช้จ่ายงบประมาณ';
     var done = function () {
       document.documentElement.classList.remove('mn-printing'); document.title = oldTitle;
       if (box.parentNode) box.parentNode.removeChild(box);
@@ -3998,7 +4349,7 @@ body.mn-open{overflow:hidden}
     $m('mn-body').addEventListener('scroll', function () { clearTimeout(spy.t); spy.t = setTimeout(spy, 60); });
     $m('mn-toc-sel').addEventListener('change', function () { go(this.value); });
   });
-  window.Manual = { open: openManual, close: closeManual, print: printManual };
+  window.Manual = { open: openManual, openSpec: openSpec, close: closeManual, print: printManual };
 })();
 </script>
 
@@ -4059,6 +4410,11 @@ body.mn-open{overflow:hidden}
     var w = window.open(url, '_blank');
     if (w) { try { w.opener = null; } catch (err) {} } else { window.open(url, '_top'); }   // ถ้าเบราว์เซอร์บล็อกป๊อปอัป ให้เปิดในหน้าเดิมแทน
   });
+  /* หมวดช่วยเหลือ: Spec ระบบ (Auth ซ่อน/แสดงตามบทบาท และเซิร์ฟเวอร์ตรวจสิทธิ์อีกครั้ง) */
+  $('side-spec').addEventListener('click', function (e) {
+    e.preventDefault(); document.body.classList.remove('nav-open');
+    if (window.Auth && Auth.openSpec) Auth.openSpec();
+  });
   /* เมนูแฮมเบอร์เกอร์: เปิด/ปิดแผงลิงก์ระบบอื่น (มือถือ/แท็บเล็ต) */
   (function () {
     var btn = document.getElementById('nav-btn');
@@ -4090,7 +4446,7 @@ body.mn-open{overflow:hidden}
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
   /* สีของ % เบิกจ่าย (รวมผูกพัน) เทียบกับ %แผนที่ตั้งไว้ของรายการนั้น — 2 สี
-     good (เขียว) = เป็นไปตามแผน (เท่ากับ/มากกว่าแผน) · warn (ส้ม) = น้อยกว่าแผน (ไม่มีแผน = เขียว) */
+     good (เขียว) = เป็นไปตามแผน (เท่ากับ/มากกว่าแผน) · warn (ชมพูแดง --under) = น้อยกว่าแผน — ไม่ใช้สีส้มเพราะซ้ำกับเส้น %แผนที่ตั้งไว้ (ไม่มีแผน = เขียว) */
   function lvl(used, plan){
     used = Number(used) || 0; plan = Number(plan) || 0;
     return (plan <= 0 || used >= plan - 0.005) ? "good" : "warn";
@@ -4197,7 +4553,7 @@ body.mn-open{overflow:hidden}
       google.script.run
         .withSuccessHandler(function (d) { if (seq !== loadSeq) return; clearTimeout(slowTimer); clearTimeout(loadTimeout); stopTick(); initDashboard(d); })
         .withFailureHandler(fail)
-        .getBudgetData(Auth.token());
+        .getBudgetData(Auth.token(), Auth.empPass());
     } catch (err) {
       fail(err);
     }
@@ -4218,6 +4574,7 @@ body.mn-open{overflow:hidden}
 
   function initDashboard(data) {
     if (loadTimeout) clearTimeout(loadTimeout);
+    if (data && data.needEmp) { Auth.needEmp(!!data.sessionExpired); return; }   // ผู้เยี่ยมชมต้องกรอกรหัสพนักงานก่อน
     if (data && data.sessionExpired) Auth.expired('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
     if (data && data.success === false) { showError(data.errorMsg + " \n " + (data.errorStack || "")); return; }
     if (!data || !data.total) { showError("รูปแบบข้อมูลไม่ถูกต้อง กรุณาตรวจสอบชื่อชีต"); return; }
@@ -4300,7 +4657,7 @@ body.mn-open{overflow:hidden}
       '\nงบประมาณรวม: ' + f(d.totalBudget) + ' บาท' + (sharePct != null ? ' (' + fp(sharePct) + ' ของทั้งหมด)' : '') +
       '\nเบิกจ่ายจริง: ' + f(d.actualPaid) + ' บาท' +
       '\nงบผูกพัน: ' + f(d.committed) + ' บาท' +
-      '\nใช้จ่ายรวมสุทธิ: ' + f(d.totalUsed) + ' บาท (' + fp(d.usedPct) + ')' +
+      '\nใช้จ่ายรวมสุทธิ: ' + f(d.totalUsed) + '\u00a0บาท\u00a0(' + fp(d.usedPct) + ')' + /* NBSP: ไม่ให้ (xx%) ตกบรรทัด */
       '\nคงเหลือสุทธิ: ' + f(d.netBalance) + ' บาท' +
       '\n%แผนที่ตั้งไว้ (' + currentMonthLabel + '): ' + fp(d.plannedPct);
   }
@@ -4616,7 +4973,7 @@ body.mn-open{overflow:hidden}
     if (showX) {
       var LX = lvl(X.pct, X.plan), xt = 'ร้อยละเบิกจ่าย / แผน ' + currentMonthLabel + ' (ไม่รวม ' + X.codes.join(', ') + ')';
       $('drStats').innerHTML += '<div class="ms" title="งบประมาณ ' + f(X.b) + ' · ใช้จ่ายรวม ' + f(X.u) + '"><div class="l">' + vst('pctx', xt) + 'ร้อยละเบิกจ่าย / แผน ' + currentMonthLabel +
-        '</div><div class="v num"><span class="t-' + LX + '">' + fp(X.pct) + '</span> <span class="muted">/ ' + fp(X.plan) + '</span></div><span class="xl">(ไม่รวมยอด ' + esc(X.codes.join(', ')) + ')</span></div>';
+        '</div><span class="xl">(ไม่รวมยอด ' + esc(X.codes.join(', ')) + ')</span><div class="v num"><span class="t-' + LX + '">' + fp(X.pct) + '</span> <span class="muted">/ ' + fp(X.plan) + '</span></div></div>';
     }
     $('drStats').classList.toggle('x5', !!showX);
     $('drHead').innerHTML = headRow(true, codeH, childLabel, true, true);
@@ -4682,7 +5039,7 @@ body.mn-open{overflow:hidden}
           return { item: L.filter(function (o) { return (o.id || o.code || o.name) === k; })[0] || x.item, level: x.level };
         });
         if (it) openDrawer(it, 'project', true);
-      }).withFailureHandler(function (e) { Busy.end(); showError(e); }).getBudgetData(Auth.token());
+      }).withFailureHandler(function (e) { Busy.end(); showError(e); }).getBudgetData(Auth.token(), Auth.empPass());
     }).withFailureHandler(function (err) { Busy.end(); td.classList.remove('busy'); Auth.toast('บันทึกไม่สำเร็จ: ' + (err && err.message || err), true); })
       .perfSave(Auth.token(), code, v);
   }
@@ -4848,7 +5205,7 @@ body.mn-open{overflow:hidden}
   /* ================= ส่งออก Excel (จัดรูปแบบด้วย ExcelJS) ================= */
   var XL = {
     font: 'Tahoma', navy: 'FF1B3A5C', tint: 'FFE6EDF5', zebra: 'FFF7F8FA', line: 'FFD6DBE3', gray: 'FF6B7280',
-    good: 'FF0F8A5F', warn: 'FFB86E00', bad: 'FFC73E3A', perf: 'FF0E8C99', plan: 'FFC98200',
+    good: 'FF0F8A5F', warn: 'FFD9465F', bad: 'FFC73E3A', perf: 'FF0E8C99', plan: 'FFC98200',
     money: ['งบประมาณรวม', 'เบิกจ่ายจริง', 'งบผูกพัน', 'ใช้จ่ายรวมสุทธิ', 'คงเหลือสุทธิ'],
     moneyFmt: '#,##0.00;[Red]-#,##0.00', pctFmt: '0.00%'
   };
